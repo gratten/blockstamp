@@ -18,10 +18,12 @@ def home():
         minute = form.minute.data
         second = form.second.data
 
-        given_datetime = int(datetime.datetime(year, month, day, hour, minute, second).timestamp())
+        target_time = int(datetime.datetime(year, month, day, hour, minute, second).timestamp())
 
 
-        block_height = given_datetime 
+        # block_height = given_datetime
+        max_block_height = block.get_best_block()
+        block_height = block.get_block_height(max_block_height, target_time)
 
 
         return redirect(url_for('block_height', block_height=block_height))
