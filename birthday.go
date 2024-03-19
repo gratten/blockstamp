@@ -8,8 +8,9 @@ import (
 	"log"
 	"fmt"
 	"time"
-
+    "os"
 	"github.com/btcsuite/btcd/rpcclient"
+    "github.com/joho/godotenv"
 )
 
 func binarySearch(client *rpcclient.Client, blockCount int64, targetTime int64) int64 {
@@ -71,11 +72,18 @@ func binarySearch(client *rpcclient.Client, blockCount int64, targetTime int64) 
 }
 
 func main() {
+    // Load the environment variables from the .env file
+    err := godotenv.Load(".env")
+    if err != nil {
+        log.Fatalf("Error loading .env file")
+    }
+    username := os.Getenv("BTCUSER")
+    password := os.Getenv("PASSWORD")
 	// Connect to local bitcoin core RPC server using HTTP POST mode.
-	connCfg := &rpcclient.ConnConfig{
+	connCfg := &rpcclient.ConnConfig {
 		Host:         "localhost:8332",
-		User:         "",
-		Pass:         "",
+		User:         username,
+		Pass:         password,
 		HTTPPostMode: true, // Bitcoin core only supports HTTP POST mode
 		DisableTLS:   true, // Bitcoin core does not provide TLS by default
 	}
