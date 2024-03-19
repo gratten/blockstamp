@@ -2,7 +2,7 @@ from app import app
 from flask import render_template, flash, redirect, url_for
 from app.forms import DateForm
 from app import block
-
+import datetime
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -18,7 +18,10 @@ def home():
         minute = form.minute.data
         second = form.second.data
 
-        block_height = year
+        given_datetime = int(datetime.datetime(year, month, day, hour, minute, second).timestamp())
+
+
+        block_height = given_datetime 
 
 
         return redirect(url_for('block_height', block_height=block_height))
