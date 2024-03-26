@@ -11,10 +11,12 @@
       {
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [
-            openssl
-            python311
-            python311Packages.pip
-            python311Packages.virtualenv
+            go # The Go / Golang programming language
+            gopls # Official language server for the Go language
+            openssl # Cryptographic library
+            python311 # Python 3.11
+            python311Packages.pip # Python package manager
+            python311Packages.virtualenv # Virtual environment module
           ];
           shellHook = ''
             # deactivate any currently activated virtual env and
