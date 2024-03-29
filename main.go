@@ -105,7 +105,7 @@ func main() {
 
 	h1 := func(w http.ResponseWriter, r *http.Request) {
 		tmpl := template.Must(template.ParseFiles("index.html"))
-		blockheight := "1111111"
+		blockheight := "Enter a date to find the blockheight."
 		tmpl.Execute(w, blockheight)
 	}
 
@@ -134,11 +134,11 @@ func main() {
 		// target := FormatInt(int64(targetTime), 10)
 		// // fmt.Println(year)
 
-		fmt.Println("Finding block height...")
+		// fmt.Println("Finding block height...")
 		result := binarySearch(client, blockCount, targetTime)
 		// fmt.Println(result)
-		fmt.Printf("The block height at this date and time was: %d\n", result)
-		fmt.Printf("Type of myVar: %T\n", result)
+		// fmt.Printf("The block height at this date and time was: %d\n", result)
+		// fmt.Printf("Type of myVar: %T\n", result)
 		resultStr := strconv.FormatInt(result, 10)
 		tmpl, _ := template.New("t").Parse(resultStr)
 		tmpl.Execute(w, nil)

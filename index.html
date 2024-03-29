@@ -24,7 +24,7 @@
         <div class="col-4">
             <h1 class="mb-4">Enter Date</h1>
 
-            <form hx-post="/get-blockheight/" hx-target="#blockheight">
+            <form hx-post="/get-blockheight/" hx-target="#blockheight" hx-indicator="#spinner">
                 <div class="mb-2">
                     <label for="date-year">Year</label>
                     <input type="number" name="year" id="date-year" class="form-control" />
@@ -51,7 +51,7 @@
                 </div>
 
                 <button type="submit" class="btn btn-primary">
-                    <!-- <span class="spinner-border spinner-border-sm htmx-indicator" id="spinner" role="status" aria-hidden="true"></span> -->
+                    <span class="spinner-border spinner-border-sm htmx-indicator" id="spinner" role="status" aria-hidden="true"></span>
                     Submit
                 </button>
             </form>
