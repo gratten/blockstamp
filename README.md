@@ -39,3 +39,11 @@ direnv allow
 ```
 
 Now, you don't need to type `nix develop` anymore.  Any time you change into the project directory, direnv will automatically load the development shell, and it will automatically unload the development shell when you navigate out of the project directory.  An additional benefit is that it will integrate with your existing shell of choice, e.g. bash, zsh, etc.
+
+### htmx-go branch
+
+make sure .env file is set up
+
+go run main.go
+
+go to localhost:8000 in browser
