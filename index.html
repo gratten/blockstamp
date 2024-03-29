@@ -24,14 +24,30 @@
         <div class="col-4">
             <h1 class="mb-4">Enter Date</h1>
 
-            <form hx-post="/get_blockheight/" hx-target="#blockheight" hx-swap="delete">
+            <form hx-post="/get-blockheight/" hx-target="#blockheight">
                 <div class="mb-2">
                     <label for="date-year">Year</label>
-                    <input type="text" name="year" id="date-year" class="form-control" />
+                    <input type="number" name="year" id="date-year" class="form-control" />
                 </div>
-                <div class="mb-3">
+                <div class="mb-2">
                     <label for="date-month">Month</label>
-                    <input type="text" name="month" id="date-month" class="form-control" />
+                    <input type="number" name="month" id="date-month" class="form-control" />
+                </div>
+                <div class="mb-2">
+                    <label for="date-day">Day</label>
+                    <input type="number" name="day" id="date-day" class="form-control" />
+                </div>
+                <div class="mb-2">
+                    <label for="date-hour">Hour</label>
+                    <input type="number" name="hour" id="date-hour" class="form-control" />
+                </div>
+                <div class="mb-2">
+                    <label for="date-minute">Minute</label>
+                    <input type="number" name="minute" id="date-minute" class="form-control" />
+                </div>
+                <div class="mb-2">
+                    <label for="date-second">Second</label>
+                    <input type="number" name="second" id="date-second" class="form-control" />
                 </div>
 
                 <button type="submit" class="btn btn-primary">
