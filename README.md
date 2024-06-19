@@ -18,13 +18,6 @@ nix develop
 ```
 The dependencies will be downloaded/installed in a contained environment, and your development shell will be loaded.
 
-### Run The Program
-```bash
-python birthday.py
-```
-Then follow the prompts to enter your desired date and time.
-
----
 
 ### Convenience Feature: Direnv (Optional But Recommended)
 
@@ -39,3 +32,19 @@ direnv allow
 ```
 
 Now, you don't need to type `nix develop` anymore.  Any time you change into the project directory, direnv will automatically load the development shell, and it will automatically unload the development shell when you navigate out of the project directory.  An additional benefit is that it will integrate with your existing shell of choice, e.g. bash, zsh, etc.
+
+### Configure .env file
+
+First create a `.env` file by copying the `.env.sample` file:
+```
+cp .env.local .env
+```env 
+
+Then, in the `.env` file, replace `my_bitcoind_username` and `my_bitcoind_password` with the values from your configured Bitcoin Node.
+
+
+### Run The Program
+```bash
+go run main.go
+```
+Then open a browser to `localhost:8000`
