@@ -2,3 +2,4 @@ venv/
 .venv
 .direnv
 .env
+!.env.sample
