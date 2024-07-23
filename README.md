@@ -38,14 +38,14 @@ Now, you don't need to type `nix develop` anymore.  Any time you change into the
 First create a `.env` file by copying the `.env.sample` file:
 ```
 cp .env.sample .env
-```env 
+``` 
 
 Then, in the `.env` file, replace `my_bitcoind_username` and `my_bitcoind_password` with the values from your configured Bitcoin Node.
 If your Bitcoin Node is running on your local environment, you can leave "host" as localhost:8332 in the .env file.
 Otherwise, you can change localhost to the IP address of your node.
 
 ### Run The Program
-```bash
+```
 go run main.go
 ```
 Then open a browser to `localhost:8000`
