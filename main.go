@@ -78,9 +78,11 @@ func main() {
 	}
 	username := os.Getenv("BTCUSER")
 	password := os.Getenv("PASSWORD")
+	host := os.Getenv("HOST")
 	// Connect to local bitcoin core RPC server using HTTP POST mode.
 	connCfg := &rpcclient.ConnConfig{
-		Host:         "localhost:8332",
+		// Host:         "localhost:8332",
+		Host:         host,
 		User:         username,
 		Pass:         password,
 		HTTPPostMode: true, // Bitcoin core only supports HTTP POST mode
