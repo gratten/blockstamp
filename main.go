@@ -70,6 +70,24 @@ func binarySearch(client *rpcclient.Client, blockCount int64, targetTime int64) 
 	return (leftBlockHeight)
 }
 
+func estimateBlock(client *rpcclient.Client, blockCount int64, targetTime int64) int64 {
+	// var blockCount
+	// fmt.Println(blockCount)
+
+	blockHash, err := client.GetBlockHash(blockCount)
+	if err != nil {
+		log.Fatal(err)
+	}
+	block, err := client.GetBlockVerbose(blockHash)
+	if err != nil {
+		log.Fatal(err)
+	}
+	blockTime := block.Time
+	fmt.Println(blockTime)
+	return (targetTime)
+
+}
+
 func main() {
 	// blockchain stuff
 	err := godotenv.Load(".env")
@@ -141,9 +159,20 @@ func main() {
 		// log.Print(targetTime)
 		// target := FormatInt(int64(targetTime), 10)
 		// // fmt.Println(year)
-
+		// fmt.Println(targetTime)
+		// fmt.Println(time.Now().Unix())
+		timeNow := time.Now().Unix()
+		var result int64
+		if targetTime > timeNow {
+			// fmt.Println("it's the future")
+			// result = 11111111
+			result = estimateBlock(client, blockCount, targetTime)
+		} else {
+			// fmt.Println("it's the past")
+			result = binarySearch(client, blockCount, targetTime)
+		}
 		// fmt.Println("Finding block height...")
-		result := binarySearch(client, blockCount, targetTime)
+		// result := binarySearch(client, blockCount, targetTime)
 		// fmt.Println(result)
 		// fmt.Printf("The block height at this date and time was: %d\n", result)
 		// fmt.Printf("Type of myVar: %T\n", result)
