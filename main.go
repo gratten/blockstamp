@@ -96,11 +96,11 @@ func main() {
 	}
 	defer client.Shutdown()
 
-	// Get the current block count.
-	blockCount, err := client.GetBlockCount()
-	if err != nil {
-		log.Fatal(err)
-	}
+	// // Get the current block count.
+	// blockCount, err := client.GetBlockCount()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
 	// web stuff (collect target time)
 	fmt.Println("hello world")
@@ -112,6 +112,12 @@ func main() {
 	}
 
 	h2 := func(w http.ResponseWriter, r *http.Request) {
+
+		// Get the current block count.
+		blockCount, err := client.GetBlockCount()
+		if err != nil {
+			log.Fatal(err)
+		}
 		// log.Print("HTMX request recieved")
 		// log.Print(r.Header.Get("HX-Request"))
 		year, _ := strconv.Atoi(r.PostFormValue("year"))
