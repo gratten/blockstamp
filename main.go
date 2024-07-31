@@ -209,20 +209,24 @@ func main() {
 		// fmt.Println(time.Now().Unix())
 		timeNow := time.Now().Unix()
 		var result int64
+		var resultStr string
 		if targetTime > timeNow {
 			// fmt.Println("it's the future")
 			// result = 11111111
 			result = estimateBlock(client, blockCount, targetTime)
+			resultStr = strconv.FormatInt(result, 10)
+			resultStr += " (estimate)"
 		} else {
 			// fmt.Println("it's the past")
 			result = binarySearch(client, blockCount, targetTime)
+			resultStr = strconv.FormatInt(result, 10)
 		}
 		// fmt.Println("Finding block height...")
 		// result := binarySearch(client, blockCount, targetTime)
 		// fmt.Println(result)
 		// fmt.Printf("The block height at this date and time was: %d\n", result)
 		// fmt.Printf("Type of myVar: %T\n", result)
-		resultStr := strconv.FormatInt(result, 10)
+		// resultStr := strconv.FormatInt(result, 10)
 		tmpl, _ := template.New("t").Parse(resultStr)
 		tmpl.Execute(w, nil)
 
