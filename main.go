@@ -70,10 +70,37 @@ func binarySearch(client *rpcclient.Client, blockCount int64, targetTime int64) 
 	return (leftBlockHeight)
 }
 
-func estimateBlock(client *rpcclient.Client, blockCount int64, targetTime int64) int64 {
-	// var blockCount
-	// fmt.Println(blockCount)
+// func estimateBlock(client *rpcclient.Client, blockCount int64, targetTime int64) int64 {
+// 	// var blockCount
+// 	// fmt.Println(blockCount)
 
+// 	blockHash, err := client.GetBlockHash(blockCount)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	block, err := client.GetBlockVerbose(blockHash)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	currentTime := block.Time
+// 	// fmt.Println(blockTime)
+// 	// return (targetTime)
+
+// 	var a = currentTime; //2013-07-20 15:30
+// 	var b = targetTime; //2013-07-29 15:45
+
+// 	var dateA = new Date(a);
+// 	var dateB = new Date(b);
+
+// 	var dayRelativeDifference =   dateB.getHours()*60 + dateB.getMinutes() - dateA.getHours()*60 - dateA.getMinutes();
+// 	//  dayRelativeDifference will be 15
+
+// 	var absoluteDifference    = (b-a)/60
+// 	//  absoluteDifference will be 12975000
+
+// }
+
+func estimateBlock(client *rpcclient.Client, blockCount int64, targetTime int64) int64 {
 	blockHash, err := client.GetBlockHash(blockCount)
 	if err != nil {
 		log.Fatal(err)
@@ -82,10 +109,29 @@ func estimateBlock(client *rpcclient.Client, blockCount int64, targetTime int64)
 	if err != nil {
 		log.Fatal(err)
 	}
-	blockTime := block.Time
-	fmt.Println(blockTime)
-	return (targetTime)
+	currentTime := time.Unix(block.Time, 0)
+	targetDate := time.Unix(targetTime, 0)
 
+	// Calculate the time difference in minutes
+	duration := targetDate.Sub(currentTime)
+	// dayRelativeDifference := int(duration.Minutes())
+
+	// Calculate absolute difference in minutes (if needed)
+	absoluteDifference := int(duration.Seconds()) / 60
+
+	// log.Printf("Day relative difference: %d minutes\n", dayRelativeDifference)
+	// log.Printf("Absolute difference: %d minutes\n", absoluteDifference)
+
+	// return int64(dayRelativeDifference)
+	dividedDifference := absoluteDifference / 10
+	result := blockCount + int64(dividedDifference)
+
+	// Log the result if needed
+	// log.Printf("Day relative difference: %d minutes\n", dayRelativeDifference)
+	// log.Printf("Divided difference: %d\n", dividedDifference)
+	// log.Printf("Resulting block count: %d\n", result)
+
+	return result
 }
 
 func main() {
