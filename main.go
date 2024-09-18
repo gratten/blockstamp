@@ -21,53 +21,53 @@ var (
 )
 
 func getBlockTime(height int64) (int64, error) {
-    hash, err := client.GetBlockHash(height)
-    if err != nil {
-        return 0, fmt.Errorf("error getting block hash: %v", err)
-    }
-    block, err := client.GetBlockVerbose(hash)
-    if err != nil {
-        return 0, fmt.Errorf("error getting block details: %v", err)
-    }
-    return block.Time, nil
+	hash, err := client.GetBlockHash(height)
+	if err != nil {
+		return 0, fmt.Errorf("error getting block hash: %v", err)
+	}
+	block, err := client.GetBlockVerbose(hash)
+	if err != nil {
+		return 0, fmt.Errorf("error getting block details: %v", err)
+	}
+	return block.Time, nil
 }
 
 func binarySearch(blockCount int64, targetTime int64) int64 {
-    cacheMutex.RLock()
-    if cachedHeight, ok := cacheMap[targetTime]; ok {
-        cacheMutex.RUnlock()
-        return cachedHeight
-    }
-    cacheMutex.RUnlock()
+	cacheMutex.RLock()
+	if cachedHeight, ok := cacheMap[targetTime]; ok {
+		cacheMutex.RUnlock()
+		return cachedHeight
+	}
+	cacheMutex.RUnlock()
 
-    var leftBlockHeight, rightBlockHeight int64 = 0, blockCount
+	var leftBlockHeight, rightBlockHeight int64 = 0, blockCount
 
-    for leftBlockHeight <= rightBlockHeight {
-        midBlockHeight := (leftBlockHeight + rightBlockHeight) / 2
+	for leftBlockHeight <= rightBlockHeight {
+		midBlockHeight := (leftBlockHeight + rightBlockHeight) / 2
 
-        midBlockTime, err := getBlockTime(midBlockHeight)
-        if err != nil {
-            log.Printf("Error getting block time: %v", err)
-            return -1
-        }
+		midBlockTime, err := getBlockTime(midBlockHeight)
+		if err != nil {
+			log.Printf("Error getting block time: %v", err)
+			return -1
+		}
 
-        if midBlockTime == targetTime {
-            cacheMutex.Lock()
-            cacheMap[targetTime] = midBlockHeight
-            cacheMutex.Unlock()
-            return midBlockHeight
-        } else if midBlockTime < targetTime {
-            leftBlockHeight = midBlockHeight + 1
-        } else {
-            rightBlockHeight = midBlockHeight - 1
-        }
-    }
+		if midBlockTime == targetTime {
+			cacheMutex.Lock()
+			cacheMap[targetTime] = midBlockHeight
+			cacheMutex.Unlock()
+			return midBlockHeight
+		} else if midBlockTime < targetTime {
+			leftBlockHeight = midBlockHeight + 1
+		} else {
+			rightBlockHeight = midBlockHeight - 1
+		}
+	}
 
-    result := leftBlockHeight
-    cacheMutex.Lock()
-    cacheMap[targetTime] = result
-    cacheMutex.Unlock()
-    return result
+	result := leftBlockHeight
+	cacheMutex.Lock()
+	cacheMap[targetTime] = result
+	cacheMutex.Unlock()
+	return result
 }
 
 func main() {
