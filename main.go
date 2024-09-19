@@ -14,10 +14,18 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// Cache TTL of 24hrs
+const cacheTTL = 24 * time.Hour
+
+type cacheEntry struct {
+	height    int64
+	timestamp time.Time
+}
+
 var (
 	client     *rpcclient.Client
 	once       sync.Once
-	cacheMap   = make(map[int64]int64)
+	cacheMap   = make(map[int64]cacheEntry)
 	cacheMutex sync.RWMutex
 )
 
@@ -50,6 +58,20 @@ func init() {
 	})
 }
 
+func clearCachePeriodically() {
+	for {
+		time.Sleep(10 * time.Minute) // Run the cleanup every 10 minutes
+
+		cacheMutex.Lock()
+		for targetTime, entry := range cacheMap {
+			if time.Since(entry.timestamp) > cacheTTL {
+				delete(cacheMap, targetTime) // Delete expired entries
+			}
+		}
+		cacheMutex.Unlock()
+	}
+}
+
 func getBlockTime(height int64) (int64, error) {
 	hash, err := client.GetBlockHash(height)
 	if err != nil {
@@ -65,12 +87,13 @@ func getBlockTime(height int64) (int64, error) {
 func binarySearch(blockCount int64, targetTime int64) int64 {
 	// Check if the result is already cached
 	cacheMutex.RLock()
-	if cachedHeight, ok := cacheMap[targetTime]; ok {
+	if cachedEntry, ok := cacheMap[targetTime]; ok {
 		cacheMutex.RUnlock()
-		return cachedHeight
+		return cachedEntry.height
 	}
 	cacheMutex.RUnlock()
 
+	// Perform binary search
 	var leftBlockHeight, rightBlockHeight int64 = 0, blockCount
 
 	for leftBlockHeight <= rightBlockHeight {
@@ -84,7 +107,7 @@ func binarySearch(blockCount int64, targetTime int64) int64 {
 
 		if midBlockTime == targetTime {
 			cacheMutex.Lock()
-			cacheMap[targetTime] = midBlockHeight
+			cacheMap[targetTime] = cacheEntry{height: midBlockHeight, timestamp: time.Now()}
 			cacheMutex.Unlock()
 			return midBlockHeight
 		} else if midBlockTime < targetTime {
@@ -96,13 +119,16 @@ func binarySearch(blockCount int64, targetTime int64) int64 {
 
 	result := leftBlockHeight
 	cacheMutex.Lock()
-	cacheMap[targetTime] = result
+	cacheMap[targetTime] = cacheEntry{height: result, timestamp: time.Now()}
 	cacheMutex.Unlock()
 	return result
 }
 
 func main() {
 	defer client.Shutdown()
+
+	// Start cache cleanup goroutine
+	go clearCachePeriodically()
 
 	fmt.Println("Server started")
 
