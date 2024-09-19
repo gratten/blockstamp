@@ -16,6 +16,7 @@ import (
 
 // Cache TTL of 24hrs
 const cacheTTL = 24 * time.Hour
+const averageBlockTime = 600 // Average block time in seconds (10 minutes)
 
 type cacheEntry struct {
 	height    int64
@@ -93,7 +94,27 @@ func binarySearch(blockCount int64, targetTime int64) int64 {
 	}
 	cacheMutex.RUnlock()
 
-	// Perform binary search
+	// Get the latest block's time
+	latestBlockHash, err := client.GetBlockHash(blockCount)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	latestBlock, err := client.GetBlockVerbose(latestBlockHash)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	latestBlockTime := latestBlock.Time
+
+	// Check if the target time is in the future
+	if targetTime > latestBlockTime {
+		timeDifference := targetTime - latestBlockTime
+		estimatedFutureBlocks := timeDifference / averageBlockTime
+		return blockCount + estimatedFutureBlocks
+	}
+
+	// Perform binary search for past blocks
 	var leftBlockHeight, rightBlockHeight int64 = 0, blockCount
 
 	for leftBlockHeight <= rightBlockHeight {
