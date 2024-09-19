@@ -16,7 +16,7 @@ import (
 
 // Cache TTL of 24hrs
 const cacheTTL = 24 * time.Hour
-const averageBlockTime = 600 // Average block time in seconds (10 minutes)
+const averageBlockTime = 600
 
 type cacheEntry struct {
 	height    int64
@@ -61,12 +61,12 @@ func init() {
 
 func clearCachePeriodically() {
 	for {
-		time.Sleep(10 * time.Minute) // Run the cleanup every 10 minutes
+		time.Sleep(10 * time.Minute)
 
 		cacheMutex.Lock()
 		for targetTime, entry := range cacheMap {
 			if time.Since(entry.timestamp) > cacheTTL {
-				delete(cacheMap, targetTime) // Delete expired entries
+				delete(cacheMap, targetTime)
 			}
 		}
 		cacheMutex.Unlock()
