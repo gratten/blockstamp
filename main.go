@@ -16,9 +16,39 @@ import (
 
 var (
 	client     *rpcclient.Client
+	once       sync.Once
 	cacheMap   = make(map[int64]int64)
 	cacheMutex sync.RWMutex
 )
+
+func init() {
+	once.Do(func() {
+		// Load .env file once
+		err := godotenv.Load(".env")
+		if err != nil {
+			log.Fatalf("Error loading .env file")
+		}
+
+		username := os.Getenv("BTCUSER")
+		password := os.Getenv("PASSWORD")
+		host := os.Getenv("HOST")
+
+		// Initialize rpcclient only once
+		connCfg := &rpcclient.ConnConfig{
+			Host:         host,
+			User:         username,
+			Pass:         password,
+			HTTPPostMode: true,
+			DisableTLS:   true,
+		}
+
+		var err2 error
+		client, err2 = rpcclient.New(connCfg, nil)
+		if err2 != nil {
+			log.Fatal(err2)
+		}
+	})
+}
 
 func getBlockTime(height int64) (int64, error) {
 	hash, err := client.GetBlockHash(height)
@@ -33,6 +63,7 @@ func getBlockTime(height int64) (int64, error) {
 }
 
 func binarySearch(blockCount int64, targetTime int64) int64 {
+	// Check if the result is already cached
 	cacheMutex.RLock()
 	if cachedHeight, ok := cacheMap[targetTime]; ok {
 		cacheMutex.RUnlock()
@@ -71,27 +102,6 @@ func binarySearch(blockCount int64, targetTime int64) int64 {
 }
 
 func main() {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatalf("Error loading .env file")
-	}
-	username := os.Getenv("BTCUSER")
-	password := os.Getenv("PASSWORD")
-	host := os.Getenv("HOST")
-
-	connCfg := &rpcclient.ConnConfig{
-		Host:         host,
-		User:         username,
-		Pass:         password,
-		HTTPPostMode: true,
-		DisableTLS:   true,
-	}
-
-	var err2 error
-	client, err2 = rpcclient.New(connCfg, nil)
-	if err2 != nil {
-		log.Fatal(err2)
-	}
 	defer client.Shutdown()
 
 	fmt.Println("Server started")
