@@ -112,7 +112,6 @@ func binarySearch(blockCount int64, targetTime int64) string {
 	if targetTime > latestBlockTime {
 		timeDifference := targetTime - latestBlockTime
 		estimatedFutureBlocks := timeDifference / averageBlockTime
-		log.Printf("future")
 		resultStr := strconv.FormatInt(blockCount+estimatedFutureBlocks, 10) + " (estimate)"
 		return resultStr
 	}
