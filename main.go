@@ -85,12 +85,13 @@ func getBlockTime(height int64) (int64, error) {
 	return block.Time, nil
 }
 
-func binarySearch(blockCount int64, targetTime int64) int64 {
+func binarySearch(blockCount int64, targetTime int64) string {
 	// Check if the result is already cached
 	cacheMutex.RLock()
 	if cachedEntry, ok := cacheMap[targetTime]; ok {
 		cacheMutex.RUnlock()
-		return cachedEntry.height
+		resultStr := strconv.FormatInt(cachedEntry.height, 10)
+		return resultStr
 	}
 	cacheMutex.RUnlock()
 
@@ -111,7 +112,8 @@ func binarySearch(blockCount int64, targetTime int64) int64 {
 	if targetTime > latestBlockTime {
 		timeDifference := targetTime - latestBlockTime
 		estimatedFutureBlocks := timeDifference / averageBlockTime
-		return blockCount + estimatedFutureBlocks
+		resultStr := strconv.FormatInt(blockCount+estimatedFutureBlocks, 10) + " (estimate)"
+		return resultStr
 	}
 
 	// Perform binary search for past blocks
@@ -123,14 +125,15 @@ func binarySearch(blockCount int64, targetTime int64) int64 {
 		midBlockTime, err := getBlockTime(midBlockHeight)
 		if err != nil {
 			log.Printf("Error getting block time: %v", err)
-			return -1
+			return "error"
 		}
 
 		if midBlockTime == targetTime {
 			cacheMutex.Lock()
 			cacheMap[targetTime] = cacheEntry{height: midBlockHeight, timestamp: time.Now()}
 			cacheMutex.Unlock()
-			return midBlockHeight
+			resultStr := strconv.FormatInt(midBlockHeight, 10)
+			return resultStr
 		} else if midBlockTime < targetTime {
 			leftBlockHeight = midBlockHeight + 1
 		} else {
@@ -142,7 +145,8 @@ func binarySearch(blockCount int64, targetTime int64) int64 {
 	cacheMutex.Lock()
 	cacheMap[targetTime] = cacheEntry{height: result, timestamp: time.Now()}
 	cacheMutex.Unlock()
-	return result
+	resultStr := strconv.FormatInt(result, 10)
+	return resultStr
 }
 
 func main() {
@@ -182,8 +186,7 @@ func main() {
 		givenDateTime := time.Date(year, time.Month(month), day, hour, minute, second, 0, location)
 		targetTime := givenDateTime.Unix()
 
-		result := binarySearch(blockCount, targetTime)
-		resultStr := strconv.FormatInt(result, 10)
+		resultStr := binarySearch(blockCount, targetTime)
 
 		duration := time.Since(start)
 		log.Printf("Time taken for request: %v", duration)
