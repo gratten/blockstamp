@@ -74,24 +74,29 @@
         </div>
     </div>
 
-    <div class="row">
-    <!-- <div class="container mt-4 content"></div> -->
-        <!-- <div class="col-8 content">
-            <h1 class="mb-4">Current Blockheight</h1>
-            <p class="fs-5 me-5" id="current-blockheight">
-                Loading...
-            </p>
-        </div>     -->
-        <div class="col-8 content2">
-            <h1 class="mb-2">Blockheight</h1>
-            
+    <div class="row mt-4 g-4">
+        <!-- Left Column for Blockheight and Stamp Form -->
+        <div class="col-8 content">
+            <h1 class="mb-4">Target Blockheight</h1>
             <p class="fs-5 me-5" id="blockheight">
                 {{ . }}
             </p>
-        </div>
-        
 
-        <div class="col-4 content2">
+            <!-- Separate container for the stamp form -->
+            <div id="stamp-container" style="display: none;">
+                <h2 class="mt-4">Stamp Form</h2>
+                <form hx-post="/submit-stamp/" hx-target="#stamp-container">
+                    <div class="mb-2">
+                        <label for="stamp-input">Enter your stamp:</label>
+                        <input type="text" id="stamp-input" name="stamp" class="form-control" />
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Right Column for Date Entry Form -->
+        <div class="col-4 content">
             <h1 class="mb-4">Enter Date</h1>
 
             <form hx-post="/get-blockheight/" hx-target="#blockheight" hx-indicator="#spinner">
@@ -126,6 +131,8 @@
                 </button>
             </form>
         </div>
+    </div>
+
 
     </div>
 
@@ -138,6 +145,25 @@
     <div class="footer">
         <p>Check out the code for the project on <a href="https://github.com/gratten/blockstamp" target="_blank">GitHub</a>.</p>
     </div>
+
+    <script>
+        document.addEventListener("htmx:afterRequest", function (event) {
+            if (event.detail.target.id === "blockheight" && event.detail.xhr.response) {
+                const response = JSON.parse(event.detail.xhr.response);
+                
+                // Update the Blockheight content
+                document.getElementById("blockheight").innerText = response.blockheight;
+
+                // Show or hide the Stamp Form based on the response
+                const stampContainer = document.getElementById("stamp-container");
+                if (response.showStampForm) {
+                    stampContainer.style.display = "block";
+                } else {
+                    stampContainer.style.display = "none";
+                }
+            }
+        });
+    </script>
 
 </body>
 </html>

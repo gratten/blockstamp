@@ -1,12 +1,14 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -163,6 +165,38 @@ func main() {
 		tmpl.Execute(w, blockheight)
 	}
 
+	// h2 := func(w http.ResponseWriter, r *http.Request) {
+	// 	start := time.Now()
+
+	// 	blockCount, err := client.GetBlockCount()
+	// 	if err != nil {
+	// 		log.Fatal(err)
+	// 	}
+
+	// 	year, _ := strconv.Atoi(r.PostFormValue("year"))
+	// 	month, _ := strconv.Atoi(r.PostFormValue("month"))
+	// 	day, _ := strconv.Atoi(r.PostFormValue("day"))
+	// 	hour, _ := strconv.Atoi(r.PostFormValue("hour"))
+	// 	minute, _ := strconv.Atoi(r.PostFormValue("minute"))
+	// 	second, _ := strconv.Atoi(r.PostFormValue("second"))
+
+	// 	location, err := time.LoadLocation("America/New_York")
+	// 	if err != nil {
+	// 		fmt.Println("Error loading location:", err)
+	// 	}
+
+	// 	givenDateTime := time.Date(year, time.Month(month), day, hour, minute, second, 0, location)
+	// 	targetTime := givenDateTime.Unix()
+
+	// 	resultStr := binarySearch(blockCount, targetTime)
+
+	// 	duration := time.Since(start)
+	// 	log.Printf("Time taken for request: %v", duration)
+
+	// 	tmpl, _ := template.New("t").Parse(resultStr)
+	// 	tmpl.Execute(w, nil)
+	// }
+
 	h2 := func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
@@ -188,11 +222,16 @@ func main() {
 
 		resultStr := binarySearch(blockCount, targetTime)
 
+		response := map[string]interface{}{
+			"blockheight":   resultStr,
+			"showStampForm": strings.Contains(resultStr, " (estimate)"), // Flag for the stamp form
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+
 		duration := time.Since(start)
 		log.Printf("Time taken for request: %v", duration)
-
-		tmpl, _ := template.New("t").Parse(resultStr)
-		tmpl.Execute(w, nil)
 	}
 
 	// h3 := func(w http.ResponseWriter, r *http.Request) {
@@ -236,5 +275,10 @@ func main() {
 	http.HandleFunc("/", h1)
 	http.HandleFunc("/get-blockheight/", h2)
 	http.HandleFunc("/current-blockheight/", h3)
+	http.HandleFunc("/submit-stamp/", func(w http.ResponseWriter, r *http.Request) {
+		stamp := r.PostFormValue("stamp")
+		log.Printf("Received stamp: %s", stamp)
+		w.Write([]byte("Stamp submitted successfully!"))
+	})
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }
