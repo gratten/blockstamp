@@ -195,7 +195,46 @@ func main() {
 		tmpl.Execute(w, nil)
 	}
 
+	// h3 := func(w http.ResponseWriter, r *http.Request) {
+	// 	blockCount, err := client.GetBlockCount()
+	// 	if err != nil {
+	// 		http.Error(w, "Unable to fetch block height", http.StatusInternalServerError)
+	// 		return
+	// 	}
+
+	// 	w.Header().Set("Content-Type", "text/plain")
+	// 	fmt.Fprint(w, blockCount) // Return only the block height as plain text
+	// }
+
+	h3 := func(w http.ResponseWriter, r *http.Request) {
+		blockCount, err := client.GetBlockCount()
+		if err != nil {
+			http.Error(w, "Unable to fetch block count", http.StatusInternalServerError)
+			return
+		}
+
+		blockHash, err := client.GetBlockHash(blockCount)
+		if err != nil {
+			http.Error(w, "Unable to fetch block hash", http.StatusInternalServerError)
+			return
+		}
+
+		block, err := client.GetBlockVerbose(blockHash)
+		if err != nil {
+			http.Error(w, "Unable to fetch block details", http.StatusInternalServerError)
+			return
+		}
+
+		blockTime := time.Unix(block.Time, 0).Format("2006-01-02 15:04:05")
+
+		response := fmt.Sprintf("Current Blockheight: %d<br>Mined on: %s", blockCount, blockTime)
+
+		w.Header().Set("Content-Type", "text/html") // Return HTML since we include <br> tags
+		fmt.Fprint(w, response)
+	}
+
 	http.HandleFunc("/", h1)
 	http.HandleFunc("/get-blockheight/", h2)
+	http.HandleFunc("/current-blockheight/", h3)
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }

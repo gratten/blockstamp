@@ -37,9 +37,16 @@
         .button:last-child {
             margin-left: auto; /* Pushes the last button (Subdomain) to the right */
         }
-        .content {
+        .content1 {
             margin-top: 80px; /* Ensure content starts below the fixed banner */
             padding: 20px;
+        }
+        .content2 {
+            margin-top: 20px; /* Ensure content starts below the fixed banner */
+            padding: 20px;
+        }
+        .current-blockheight-row {
+        margin-bottom: 1px; /* Adjust value to desired spacing */
         }
     </style>
 
@@ -52,11 +59,31 @@
         <a class="button" href="/">Home</a>
         <a class="button" href="http://lnbits.blockstamp.app/">Wallet</a>
     </div>
+    <div class="row current-blockheight-row">
+        <div class="col-12 content1">
+            <h1 class="mb-4">Current Blockheight</h1>
+            <p class="fs-5 me-5" id="current-blockheight" 
+            hx-get="/current-blockheight/" 
+            hx-trigger="load"
+            hx-swap="innerHTML">
+                Loading...
+            </p>
+            <!-- <p class="fs-5 me-5" id="current-blockheight">
+                {{ . }}
+            </p> -->
+        </div>
+    </div>
 
-    <div class="row mt-4 g-4">
+    <div class="row">
     <!-- <div class="container mt-4 content"></div> -->
-        <div class="col-8 content">
-            <h1 class="mb-4">Blockheight</h1>
+        <!-- <div class="col-8 content">
+            <h1 class="mb-4">Current Blockheight</h1>
+            <p class="fs-5 me-5" id="current-blockheight">
+                Loading...
+            </p>
+        </div>     -->
+        <div class="col-8 content2">
+            <h1 class="mb-2">Blockheight</h1>
             
             <p class="fs-5 me-5" id="blockheight">
                 {{ . }}
@@ -64,7 +91,7 @@
         </div>
         
 
-        <div class="col-4 content">
+        <div class="col-4 content2">
             <h1 class="mb-4">Enter Date</h1>
 
             <form hx-post="/get-blockheight/" hx-target="#blockheight" hx-indicator="#spinner">
