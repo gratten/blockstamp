@@ -1,7 +1,6 @@
 package main
 
 import (
-	// "db"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -14,11 +13,8 @@ import (
 	"sync"
 	"time"
 
-	// "database/sql"
-
 	"github.com/btcsuite/btcd/rpcclient"
 	"github.com/joho/godotenv"
-	// _ "github.com/lib/pq"
 )
 
 // Cache TTL of 24hrs
@@ -37,37 +33,6 @@ var (
 	cacheMutex sync.RWMutex
 	// db         *sql.DB
 )
-
-// func initDB() (*sql.DB, error) {
-// 	// Get the password from environment variables
-// 	password := os.Getenv("DB_PASSWORD")
-// 	if password == "" {
-// 		return nil, fmt.Errorf("database password not set in environment variables")
-// 	}
-
-// 	// Build the connection string using the environment variable
-// 	connStr := fmt.Sprintf("user=postgres password=%s dbname=blockstamp sslmode=disable", password)
-// 	db, err := sql.Open("postgres", connStr)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	// Optional: Ping the database to ensure connection
-// 	if err = db.Ping(); err != nil {
-// 		return nil, err
-// 	}
-
-// 	return db, nil
-// }
-
-// func closeDB(db *sql.DB) {
-// 	if db != nil {
-// 		err := db.Close()
-// 		if err != nil {
-// 			log.Printf("Error closing the database: %v", err)
-// 		}
-// 	}
-// }
 
 func init() {
 	once.Do(func() {
