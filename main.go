@@ -7,13 +7,17 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	"database/sql"
+
 	"github.com/btcsuite/btcd/rpcclient"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 )
 
 // Cache TTL of 24hrs
@@ -30,7 +34,39 @@ var (
 	once       sync.Once
 	cacheMap   = make(map[int64]cacheEntry)
 	cacheMutex sync.RWMutex
+	db         *sql.DB
 )
+
+func initDB() (*sql.DB, error) {
+	// Get the password from environment variables
+	password := os.Getenv("DB_PASSWORD")
+	if password == "" {
+		return nil, fmt.Errorf("database password not set in environment variables")
+	}
+
+	// Build the connection string using the environment variable
+	connStr := fmt.Sprintf("user=postgres password=%s dbname=blockstamp sslmode=disable", password)
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Optional: Ping the database to ensure connection
+	if err = db.Ping(); err != nil {
+		return nil, err
+	}
+
+	return db, nil
+}
+
+func closeDB(db *sql.DB) {
+	if db != nil {
+		err := db.Close()
+		if err != nil {
+			log.Printf("Error closing the database: %v", err)
+		}
+	}
+}
 
 func init() {
 	once.Do(func() {
@@ -153,6 +189,12 @@ func binarySearch(blockCount int64, targetTime int64) string {
 
 func main() {
 	defer client.Shutdown()
+	var err error
+	db, err = initDB()
+	if err != nil {
+		log.Fatalf("Could not initialize database: %v", err)
+	}
+	defer closeDB(db) // Ensure the database connection is closed when the program exits
 
 	// Start cache cleanup goroutine
 	go clearCachePeriodically()
@@ -164,38 +206,6 @@ func main() {
 		blockheight := "Enter a date to find the blockheight."
 		tmpl.Execute(w, blockheight)
 	}
-
-	// h2 := func(w http.ResponseWriter, r *http.Request) {
-	// 	start := time.Now()
-
-	// 	blockCount, err := client.GetBlockCount()
-	// 	if err != nil {
-	// 		log.Fatal(err)
-	// 	}
-
-	// 	year, _ := strconv.Atoi(r.PostFormValue("year"))
-	// 	month, _ := strconv.Atoi(r.PostFormValue("month"))
-	// 	day, _ := strconv.Atoi(r.PostFormValue("day"))
-	// 	hour, _ := strconv.Atoi(r.PostFormValue("hour"))
-	// 	minute, _ := strconv.Atoi(r.PostFormValue("minute"))
-	// 	second, _ := strconv.Atoi(r.PostFormValue("second"))
-
-	// 	location, err := time.LoadLocation("America/New_York")
-	// 	if err != nil {
-	// 		fmt.Println("Error loading location:", err)
-	// 	}
-
-	// 	givenDateTime := time.Date(year, time.Month(month), day, hour, minute, second, 0, location)
-	// 	targetTime := givenDateTime.Unix()
-
-	// 	resultStr := binarySearch(blockCount, targetTime)
-
-	// 	duration := time.Since(start)
-	// 	log.Printf("Time taken for request: %v", duration)
-
-	// 	tmpl, _ := template.New("t").Parse(resultStr)
-	// 	tmpl.Execute(w, nil)
-	// }
 
 	h2 := func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
@@ -234,17 +244,6 @@ func main() {
 		log.Printf("Time taken for request: %v", duration)
 	}
 
-	// h3 := func(w http.ResponseWriter, r *http.Request) {
-	// 	blockCount, err := client.GetBlockCount()
-	// 	if err != nil {
-	// 		http.Error(w, "Unable to fetch block height", http.StatusInternalServerError)
-	// 		return
-	// 	}
-
-	// 	w.Header().Set("Content-Type", "text/plain")
-	// 	fmt.Fprint(w, blockCount) // Return only the block height as plain text
-	// }
-
 	h3 := func(w http.ResponseWriter, r *http.Request) {
 		blockCount, err := client.GetBlockCount()
 		if err != nil {
@@ -271,14 +270,39 @@ func main() {
 		w.Header().Set("Content-Type", "text/html") // Return HTML since we include <br> tags
 		fmt.Fprint(w, response)
 	}
+	h4 := func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm() // Parse form data
+		blockheightStr := r.PostFormValue("blockheight")
+		re := regexp.MustCompile("[^0-9]")
+		blockheightStr = re.ReplaceAllString(blockheightStr, "")
+		log.Println("blockheightStr: ", blockheightStr)
+		stamp := r.PostFormValue("stamp")
+		log.Println("stamp: ", stamp)
+
+		// Convert blockheight string to integer
+		blockheight, err := strconv.Atoi(blockheightStr)
+		if err != nil {
+			log.Printf("Error converting blockheight: %v", err)
+			http.Error(w, "Invalid blockheight", http.StatusBadRequest)
+			return
+		}
+
+		// Insert into the database
+		insertStmt := `INSERT INTO stamps (blockheight, stamp) VALUES ($1, $2)`
+		_, err = db.Exec(insertStmt, blockheight, stamp)
+		if err != nil {
+			log.Printf("Error inserting stamp: %v", err)
+			http.Error(w, "Failed to insert stamp", http.StatusInternalServerError)
+			return
+		}
+
+		// Respond with success (optional)
+		fmt.Fprintf(w, "Stamp submitted successfully!")
+	}
 
 	http.HandleFunc("/", h1)
 	http.HandleFunc("/get-blockheight/", h2)
 	http.HandleFunc("/current-blockheight/", h3)
-	http.HandleFunc("/submit-stamp/", func(w http.ResponseWriter, r *http.Request) {
-		stamp := r.PostFormValue("stamp")
-		log.Printf("Received stamp: %s", stamp)
-		w.Write([]byte("Stamp submitted successfully!"))
-	})
+	http.HandleFunc("/submit-stamp/", h4)
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }

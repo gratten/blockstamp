@@ -86,6 +86,7 @@
             <div id="stamp-container" style="display: none;">
                 <h2 class="mt-4">Stamp Form</h2>
                 <form hx-post="/submit-stamp/" hx-target="#stamp-container">
+                    <input type="hidden" name="blockheight" id="blockheight-input" />
                     <div class="mb-2">
                         <label for="stamp-input">Enter your stamp:</label>
                         <input type="text" id="stamp-input" name="stamp" class="form-control" />
@@ -161,6 +162,20 @@
                 } else {
                     stampContainer.style.display = "none";
                 }
+            }
+        });
+    </script>
+
+    <script>
+        // Assuming you make an HTMX request for blockheight
+        htmx.on('htmx:afterSwap', function(event) {
+            if (event.target.id === 'blockheight') {
+                // Get the blockheight value from the response
+                const response = JSON.parse(event.detail.xhr.responseText);
+                const blockheight = response.blockheight;
+
+                // Set the blockheight in the hidden input field
+                document.getElementById('blockheight-input').value = blockheight;
             }
         });
     </script>
