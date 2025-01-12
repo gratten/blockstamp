@@ -45,38 +45,22 @@ func ShowStamps(w http.ResponseWriter, r *http.Request) {
 
 	// Render the page with the stamps data
 	w.Header().Set("Content-Type", "text/html")
-	tmpl, err := template.New("stamps").Parse(`
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <title>Stamps</title>
-        </head>
-        <body>
-            <h1>Stamps</h1>
-            <table>
-                <tr>
-                    <th>Blockheight</th>
-                    <th>Stamp</th>
-                </tr>
-                {{range .}}
-                    <tr>
-                        <td>{{.Blockheight}}</td>
-                        <td>{{.Stamp}}</td>
-                    </tr>
-                {{end}}
-            </table>
-        </body>
-        </html>
-    `)
-
+	tmpl, err := template.ParseFiles(
+		"app/layout.html",
+		"app/stamps.html",
+		"app/blockheight.html",
+	)
 	if err != nil {
 		log.Printf("Error parsing template: %v", err)
 		http.Error(w, "Failed to render page", http.StatusInternalServerError)
 		return
 	}
 
-	err = tmpl.Execute(w, stamps)
+	// Pass data for layout and stamps table
+	err = tmpl.ExecuteTemplate(w, "layout.html", map[string]interface{}{
+		"Title":  "Stamps",
+		"Stamps": stamps,
+	})
 	if err != nil {
 		log.Printf("Error executing template: %v", err)
 		http.Error(w, "Failed to render page", http.StatusInternalServerError)

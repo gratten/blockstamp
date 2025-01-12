@@ -1,0 +1,16 @@
+<!-- stamps.html -->
+{{define "content"}}
+    <h1>Stamps</h1>
+    <table>
+        <tr>
+            <th>Blockheight</th>
+            <th>Stamp</th>
+        </tr>
+        {{range .Stamps}}
+            <tr>
+                <td>{{.Blockheight}}</td>
+                <td>{{.Stamp}}</td>
+            </tr>
+        {{end}}
+    </table>
+{{end}}

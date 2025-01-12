@@ -1,0 +1,17 @@
+{{define "blockheight"}}
+
+<div class="row current-blockheight-row">
+    <div class="col-12 content1">
+        <h1 class="mb-4">Current Blockheight</h1>
+        <p class="fs-5 me-5" id="current-blockheight" 
+        hx-get="/current-blockheight/" 
+        hx-trigger="load"
+        hx-swap="innerHTML">
+            Loading...
+        </p>
+        <!-- <p class="fs-5 me-5" id="current-blockheight">
+            {{ . }}
+        </p> -->
+    </div>
+</div>
+{{end}}
