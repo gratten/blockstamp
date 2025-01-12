@@ -8,6 +8,8 @@ import (
 	_ "github.com/lib/pq"
 )
 
+var db *sql.DB
+
 func initDB() (*sql.DB, error) {
 	connStr := "user=postgres password=" + os.Getenv("DB_PASSWORD") + " dbname=blockstamp sslmode=disable"
 	db, err := sql.Open("postgres", connStr)

@@ -189,84 +189,85 @@ func binarySearch(blockCount int64, targetTime int64) string {
 	return resultStr
 }
 
-// // Handler to show all stamps
-// func showStamps(w http.ResponseWriter, r *http.Request) {
-// 	// Query the database for all stamps
-// 	rows, err := db.Query("SELECT blockheight, stamp FROM stamps ORDER BY blockheight DESC")
-// 	if err != nil {
-// 		log.Printf("Error fetching stamps: %v", err)
-// 		http.Error(w, "Failed to fetch stamps", http.StatusInternalServerError)
-// 		return
-// 	}
-// 	defer rows.Close()
+// Handler to show all stamps
+func showStamps(w http.ResponseWriter, r *http.Request) {
+	// Query the database for all stamps
+	// log.Println("Database connection:", db)
+	rows, err := db.Query("SELECT blockheight, stamp FROM stamps ORDER BY blockheight DESC")
+	if err != nil {
+		log.Printf("Error fetching stamps: %v", err)
+		http.Error(w, "Failed to fetch stamps", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
 
-// 	var stamps []struct {
-// 		Blockheight int
-// 		Stamp       string
-// 	}
+	var stamps []struct {
+		Blockheight int
+		Stamp       string
+	}
 
-// 	// Loop through the result set
-// 	for rows.Next() {
-// 		var stamp struct {
-// 			Blockheight int
-// 			Stamp       string
-// 		}
-// 		err := rows.Scan(&stamp.Blockheight, &stamp.Stamp)
-// 		if err != nil {
-// 			log.Printf("Error scanning stamp: %v", err)
-// 			http.Error(w, "Failed to read stamps", http.StatusInternalServerError)
-// 			return
-// 		}
-// 		stamps = append(stamps, stamp)
-// 	}
+	// Loop through the result set
+	for rows.Next() {
+		var stamp struct {
+			Blockheight int
+			Stamp       string
+		}
+		err := rows.Scan(&stamp.Blockheight, &stamp.Stamp)
+		if err != nil {
+			log.Printf("Error scanning stamp: %v", err)
+			http.Error(w, "Failed to read stamps", http.StatusInternalServerError)
+			return
+		}
+		stamps = append(stamps, stamp)
+	}
 
-// 	// Render the page with the stamps data
-// 	w.Header().Set("Content-Type", "text/html")
-// 	tmpl, err := template.New("stamps").Parse(`
-// 		<!DOCTYPE html>
-// 		<html lang="en">
-// 		<head>
-// 			<meta charset="UTF-8">
-// 			<title>Stamps</title>
-// 		</head>
-// 		<body>
-// 			<h1>Stamps</h1>
-// 			<table>
-// 				<tr>
-// 					<th>Blockheight</th>
-// 					<th>Stamp</th>
-// 				</tr>
-// 				{{range .}}
-// 					<tr>
-// 						<td>{{.Blockheight}}</td>
-// 						<td>{{.Stamp}}</td>
-// 					</tr>
-// 				{{end}}
-// 			</table>
-// 		</body>
-// 		</html>
-// 	`)
+	// Render the page with the stamps data
+	w.Header().Set("Content-Type", "text/html")
+	tmpl, err := template.New("stamps").Parse(`
+		<!DOCTYPE html>
+		<html lang="en">
+		<head>
+			<meta charset="UTF-8">
+			<title>Stamps</title>
+		</head>
+		<body>
+			<h1>Stamps</h1>
+			<table>
+				<tr>
+					<th>Blockheight</th>
+					<th>Stamp</th>
+				</tr>
+				{{range .}}
+					<tr>
+						<td>{{.Blockheight}}</td>
+						<td>{{.Stamp}}</td>
+					</tr>
+				{{end}}
+			</table>
+		</body>
+		</html>
+	`)
 
-// 	if err != nil {
-// 		log.Printf("Error parsing template: %v", err)
-// 		http.Error(w, "Failed to render page", http.StatusInternalServerError)
-// 		return
-// 	}
+	if err != nil {
+		log.Printf("Error parsing template: %v", err)
+		http.Error(w, "Failed to render page", http.StatusInternalServerError)
+		return
+	}
 
-// 	err = tmpl.Execute(w, stamps)
-// 	if err != nil {
-// 		log.Printf("Error executing template: %v", err)
-// 		http.Error(w, "Failed to render page", http.StatusInternalServerError)
-// 		return
-// 	}
-// }
+	err = tmpl.Execute(w, stamps)
+	if err != nil {
+		log.Printf("Error executing template: %v", err)
+		http.Error(w, "Failed to render page", http.StatusInternalServerError)
+		return
+	}
+}
 
 func main() {
 	defer client.Shutdown()
 
 	// initialize db
 	var err error
-	db, err := initDB()
+	db, err = initDB()
 	if err != nil {
 		log.Fatalf("Could not initialize database: %v", err)
 	}
@@ -276,12 +277,6 @@ func main() {
 	go clearCachePeriodically()
 
 	fmt.Println("Server started")
-
-	h1 := func(w http.ResponseWriter, r *http.Request) {
-		tmpl := template.Must(template.ParseFiles("index.html"))
-		blockheight := "Enter a date to find the blockheight."
-		tmpl.Execute(w, blockheight)
-	}
 
 	h2 := func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
@@ -376,10 +371,11 @@ func main() {
 		fmt.Fprintf(w, "Stamp submitted successfully!")
 	}
 
-	http.HandleFunc("/", h1)
+	// http.HandleFunc("/", h1)
+	http.HandleFunc("/", HomeHandler)
 	http.HandleFunc("/get-blockheight/", h2)
 	http.HandleFunc("/current-blockheight/", h3)
 	http.HandleFunc("/submit-stamp/", h4)
-	// http.HandleFunc("/stamps", showStamps) // Add this line for the /stamps route
+	http.HandleFunc("/stamps", showStamps) // Add this line for the /stamps route
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }
