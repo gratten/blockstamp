@@ -1,6 +1,7 @@
 package main
 
 import (
+	// "db"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -13,11 +14,11 @@ import (
 	"sync"
 	"time"
 
-	"database/sql"
+	// "database/sql"
 
 	"github.com/btcsuite/btcd/rpcclient"
 	"github.com/joho/godotenv"
-	_ "github.com/lib/pq"
+	// _ "github.com/lib/pq"
 )
 
 // Cache TTL of 24hrs
@@ -34,39 +35,39 @@ var (
 	once       sync.Once
 	cacheMap   = make(map[int64]cacheEntry)
 	cacheMutex sync.RWMutex
-	db         *sql.DB
+	// db         *sql.DB
 )
 
-func initDB() (*sql.DB, error) {
-	// Get the password from environment variables
-	password := os.Getenv("DB_PASSWORD")
-	if password == "" {
-		return nil, fmt.Errorf("database password not set in environment variables")
-	}
+// func initDB() (*sql.DB, error) {
+// 	// Get the password from environment variables
+// 	password := os.Getenv("DB_PASSWORD")
+// 	if password == "" {
+// 		return nil, fmt.Errorf("database password not set in environment variables")
+// 	}
 
-	// Build the connection string using the environment variable
-	connStr := fmt.Sprintf("user=postgres password=%s dbname=blockstamp sslmode=disable", password)
-	db, err := sql.Open("postgres", connStr)
-	if err != nil {
-		return nil, err
-	}
+// 	// Build the connection string using the environment variable
+// 	connStr := fmt.Sprintf("user=postgres password=%s dbname=blockstamp sslmode=disable", password)
+// 	db, err := sql.Open("postgres", connStr)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	// Optional: Ping the database to ensure connection
-	if err = db.Ping(); err != nil {
-		return nil, err
-	}
+// 	// Optional: Ping the database to ensure connection
+// 	if err = db.Ping(); err != nil {
+// 		return nil, err
+// 	}
 
-	return db, nil
-}
+// 	return db, nil
+// }
 
-func closeDB(db *sql.DB) {
-	if db != nil {
-		err := db.Close()
-		if err != nil {
-			log.Printf("Error closing the database: %v", err)
-		}
-	}
-}
+// func closeDB(db *sql.DB) {
+// 	if db != nil {
+// 		err := db.Close()
+// 		if err != nil {
+// 			log.Printf("Error closing the database: %v", err)
+// 		}
+// 	}
+// }
 
 func init() {
 	once.Do(func() {
@@ -188,82 +189,84 @@ func binarySearch(blockCount int64, targetTime int64) string {
 	return resultStr
 }
 
-// Handler to show all stamps
-func showStamps(w http.ResponseWriter, r *http.Request) {
-	// Query the database for all stamps
-	rows, err := db.Query("SELECT blockheight, stamp FROM stamps ORDER BY blockheight DESC")
-	if err != nil {
-		log.Printf("Error fetching stamps: %v", err)
-		http.Error(w, "Failed to fetch stamps", http.StatusInternalServerError)
-		return
-	}
-	defer rows.Close()
+// // Handler to show all stamps
+// func showStamps(w http.ResponseWriter, r *http.Request) {
+// 	// Query the database for all stamps
+// 	rows, err := db.Query("SELECT blockheight, stamp FROM stamps ORDER BY blockheight DESC")
+// 	if err != nil {
+// 		log.Printf("Error fetching stamps: %v", err)
+// 		http.Error(w, "Failed to fetch stamps", http.StatusInternalServerError)
+// 		return
+// 	}
+// 	defer rows.Close()
 
-	var stamps []struct {
-		Blockheight int
-		Stamp       string
-	}
+// 	var stamps []struct {
+// 		Blockheight int
+// 		Stamp       string
+// 	}
 
-	// Loop through the result set
-	for rows.Next() {
-		var stamp struct {
-			Blockheight int
-			Stamp       string
-		}
-		err := rows.Scan(&stamp.Blockheight, &stamp.Stamp)
-		if err != nil {
-			log.Printf("Error scanning stamp: %v", err)
-			http.Error(w, "Failed to read stamps", http.StatusInternalServerError)
-			return
-		}
-		stamps = append(stamps, stamp)
-	}
+// 	// Loop through the result set
+// 	for rows.Next() {
+// 		var stamp struct {
+// 			Blockheight int
+// 			Stamp       string
+// 		}
+// 		err := rows.Scan(&stamp.Blockheight, &stamp.Stamp)
+// 		if err != nil {
+// 			log.Printf("Error scanning stamp: %v", err)
+// 			http.Error(w, "Failed to read stamps", http.StatusInternalServerError)
+// 			return
+// 		}
+// 		stamps = append(stamps, stamp)
+// 	}
 
-	// Render the page with the stamps data
-	w.Header().Set("Content-Type", "text/html")
-	tmpl, err := template.New("stamps").Parse(`
-		<!DOCTYPE html>
-		<html lang="en">
-		<head>
-			<meta charset="UTF-8">
-			<title>Stamps</title>
-		</head>
-		<body>
-			<h1>Stamps</h1>
-			<table>
-				<tr>
-					<th>Blockheight</th>
-					<th>Stamp</th>
-				</tr>
-				{{range .}}
-					<tr>
-						<td>{{.Blockheight}}</td>
-						<td>{{.Stamp}}</td>
-					</tr>
-				{{end}}
-			</table>
-		</body>
-		</html>
-	`)
+// 	// Render the page with the stamps data
+// 	w.Header().Set("Content-Type", "text/html")
+// 	tmpl, err := template.New("stamps").Parse(`
+// 		<!DOCTYPE html>
+// 		<html lang="en">
+// 		<head>
+// 			<meta charset="UTF-8">
+// 			<title>Stamps</title>
+// 		</head>
+// 		<body>
+// 			<h1>Stamps</h1>
+// 			<table>
+// 				<tr>
+// 					<th>Blockheight</th>
+// 					<th>Stamp</th>
+// 				</tr>
+// 				{{range .}}
+// 					<tr>
+// 						<td>{{.Blockheight}}</td>
+// 						<td>{{.Stamp}}</td>
+// 					</tr>
+// 				{{end}}
+// 			</table>
+// 		</body>
+// 		</html>
+// 	`)
 
-	if err != nil {
-		log.Printf("Error parsing template: %v", err)
-		http.Error(w, "Failed to render page", http.StatusInternalServerError)
-		return
-	}
+// 	if err != nil {
+// 		log.Printf("Error parsing template: %v", err)
+// 		http.Error(w, "Failed to render page", http.StatusInternalServerError)
+// 		return
+// 	}
 
-	err = tmpl.Execute(w, stamps)
-	if err != nil {
-		log.Printf("Error executing template: %v", err)
-		http.Error(w, "Failed to render page", http.StatusInternalServerError)
-		return
-	}
-}
+// 	err = tmpl.Execute(w, stamps)
+// 	if err != nil {
+// 		log.Printf("Error executing template: %v", err)
+// 		http.Error(w, "Failed to render page", http.StatusInternalServerError)
+// 		return
+// 	}
+// }
 
 func main() {
 	defer client.Shutdown()
+
+	// initialize db
 	var err error
-	db, err = initDB()
+	db, err := initDB()
 	if err != nil {
 		log.Fatalf("Could not initialize database: %v", err)
 	}
@@ -377,6 +380,6 @@ func main() {
 	http.HandleFunc("/get-blockheight/", h2)
 	http.HandleFunc("/current-blockheight/", h3)
 	http.HandleFunc("/submit-stamp/", h4)
-	http.HandleFunc("/stamps", showStamps) // Add this line for the /stamps route
+	// http.HandleFunc("/stamps", showStamps) // Add this line for the /stamps route
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }
