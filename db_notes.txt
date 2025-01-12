@@ -1,0 +1,4 @@
+CHECK DATABASE LOCALLY
+sudo -u postgres psql
+\c blockstamp
+SELECT * FROM stamps;

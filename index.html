@@ -57,7 +57,8 @@
     <!-- Banner with buttons -->
     <div class="banner">
         <a class="button" href="/">Home</a>
-        <a class="button" href="http://lnbits.blockstamp.app/">Wallet</a>
+        <a href="/stamps" class="button">Stamps</a> <!-- Add this link -->
+        <!-- <a class="button" href="http://lnbits.blockstamp.app/">Wallet</a> -->
     </div>
     <div class="row current-blockheight-row">
         <div class="col-12 content1">
@@ -84,11 +85,11 @@
 
             <!-- Separate container for the stamp form -->
             <div id="stamp-container" style="display: none;">
-                <h2 class="mt-4">Stamp Form</h2>
+                <!-- <h2 class="mt-4">Stamp Form</h2> -->
                 <form hx-post="/submit-stamp/" hx-target="#stamp-container">
                     <input type="hidden" name="blockheight" id="blockheight-input" />
                     <div class="mb-2">
-                        <label for="stamp-input">Enter your stamp:</label>
+                        <label for="stamp-input">Enter your stamp in time:</label>
                         <input type="text" id="stamp-input" name="stamp" class="form-control" />
                     </div>
                     <button type="submit" class="btn btn-primary">Submit</button>
