@@ -46,6 +46,6 @@ Otherwise, you can change localhost to the IP address of your node.
 
 ### Run The Program
 ```
-go run main.go
+go run ./app
 ```
 Then open a browser to `localhost:8000`
