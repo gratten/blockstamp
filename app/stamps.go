@@ -15,7 +15,7 @@ import (
 func ShowStamps(w http.ResponseWriter, r *http.Request) {
 	// Query the database for all stamps
 	// log.Println("Database connection:", db) // Logs the db connection (should not be nil)
-	rows, err := db.Query("SELECT blockheight, stamp FROM stamps ORDER BY blockheight DESC")
+	rows, err := db.Query("SELECT blockheight, stamp FROM stamps ORDER BY id ASC")
 	if err != nil {
 		log.Printf("Error fetching stamps: %v", err)
 		http.Error(w, "Failed to fetch stamps", http.StatusInternalServerError)
