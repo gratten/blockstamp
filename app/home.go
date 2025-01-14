@@ -8,6 +8,7 @@ import (
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	// Load the layout and the home content
+	log.Println("test log")
 	tmpl, err := template.ParseFiles(
 		"app/layout.html",
 		"app/home.html",
