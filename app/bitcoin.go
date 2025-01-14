@@ -71,8 +71,14 @@ func transaction() {
 	// Set nLockTime
 	tx.LockTime = uint32(targetBlockHeight)
 
-	log.Println(tx)
-
+	log.Printf("Transaction: %+v\n", tx)
+	for i, txIn := range tx.TxIn {
+		log.Printf("Input %d: %v\n", i, txIn)
+	}
+	for i, txOut := range tx.TxOut {
+		log.Printf("Output %d: %v\n", i, txOut)
+	}
+	log.Printf("LockTime: %d\n", tx.LockTime)
 	// latestBlockHash, err := client.GetBlockHash(blockCount)
 	// if err != nil {
 	// 	log.Fatal(err)
