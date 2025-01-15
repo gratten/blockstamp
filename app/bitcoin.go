@@ -13,12 +13,15 @@ import (
 	"github.com/btcsuite/btcd/wire"
 )
 
-func transaction() {
+func transaction(blockheight int, stamp string) {
+
+	log.Println(blockheight)
+	log.Println(stamp)
 
 	// User inputs
-	targetBlockHeight := 800000  // Replace with user-provided block height
-	message := "Hello, Bitcoin!" // Replace with user-provided text
-	feeRate := int64(10)         // Fee rate in satoshis per byte
+	targetBlockHeight := blockheight // Replace with user-provided block height
+	message := stamp                 // Replace with user-provided text
+	feeRate := int64(10)             // Fee rate in satoshis per byte
 
 	// Create OP_RETURN output
 	opReturnScript, err := txscript.NullDataScript([]byte(message))
