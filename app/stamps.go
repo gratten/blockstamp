@@ -97,5 +97,5 @@ func SubmitStamp(w http.ResponseWriter, r *http.Request) {
 
 	// Respond with success (optional)
 	fmt.Fprintf(w, "Stamp submitted successfully!")
-	transaction(blockheight, stamp)
+	transaction()
 }
