@@ -3,12 +3,9 @@ package main
 import (
 	// "encoding/hex"
 	// "fmt"
-	"bytes"
-	"encoding/hex"
-	"fmt"
+
 	"log"
 
-	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
@@ -85,102 +82,24 @@ func transaction(blockheight int, stamp string) {
 	// 	log.Printf("Output %d: %v\n", i, txOut)
 	// }
 	// log.Printf("LockTime: %d\n", tx.LockTime)
-	// latestBlockHash, err := client.GetBlockHash(blockCount)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	log.Println("priv key: ", generatePrivateKey())
 
-	// Sign the transaction
-	privateKeyWIF := generatePrivateKey() // Replace with your private key
-	wif, err := btcutil.DecodeWIF(privateKeyWIF)
+	// Step 1: Sign the raw transaction with the node's wallet
+	signedTx, complete, err := client.SignRawTransactionWithWallet(tx)
 	if err != nil {
-		log.Fatalf("Failed to decode WIF: %v", err)
+		log.Fatalf("Error signing raw transaction: %v", err)
 	}
-	// Convert ScriptPubKey from string to []byte
-	// scriptPubKeyBytes := []byte(selectedUTXO.ScriptPubKey)
-	scriptPubKeyBytes, err := hex.DecodeString(selectedUTXO.ScriptPubKey)
-	if err != nil {
-		log.Fatalf("Failed to decode ScriptPubKey: %v", err)
-	}
-	log.Printf("ScriptPubKey (hex): %x", scriptPubKeyBytes)
-	// Create a PrevOutputFetcher to provide UTXO details
-	prevOutFetcher := txscript.NewCannedPrevOutputFetcher(
-		scriptPubKeyBytes,          // The ScriptPubKey as a []byte
-		int64(selectedUTXO.Amount), // The value in satoshis of the UTXO
-	)
-	// Prepare the transaction's hash cache for SegWit
-	hashCache := txscript.NewTxSigHashes(tx, prevOutFetcher)
-
-	// Generate the witness signature
-	witness, err := txscript.WitnessSignature(
-		tx,                         // Transaction to sign
-		hashCache,                  // Transaction signature hashes
-		0,                          // Index of the input being signed
-		int64(selectedUTXO.Amount), // Value of the UTXO in satoshis
-		scriptPubKeyBytes,          // The UTXO's ScriptPubKey
-		txscript.SigHashAll,        // Hash type
-		wif.PrivKey,                // Private key
-		true,                       // Compress public key
-	)
-	if err != nil {
-		log.Fatalf("Failed to create witness signature: %v", err)
+	if !complete {
+		log.Fatalf("Transaction signing incomplete.")
 	}
 
-	// Assign the witness stack to the input
-	tx.TxIn[0].Witness = witness
+	log.Println("Signed Transaction (Hex): ", signedTx)
 
-	// Log the generated witness
-	log.Printf("Generated witness: %x", witness)
-	// sigScript, err := txscript.SignatureScript(tx, 0, scriptPubKeyBytes, txscript.SigHashAll, wif.PrivKey, true)
-	// log.Printf("ScriptPubKey (hex): %s", selectedUTXO.ScriptPubKey)
-	// log.Printf("ScriptPubKey (bytes): %x", scriptPubKeyBytes)
-	// log.Printf("Generated signature: %x", sigScript)
-
+	// Step 2: Broadcast the signed transaction
+	txid, err := client.SendRawTransaction(signedTx, false)
 	if err != nil {
-		log.Fatalf("Failed to sign transaction: %v", err)
-	}
-	// txIn.SignatureScript = sigScript
-
-	// Serialize and broadcast the transaction
-	var buf bytes.Buffer
-	err = tx.Serialize(&buf)
-	if err != nil {
-		log.Fatalf("Failed to serialize transaction: %v", err)
+		log.Fatalf("Error broadcasting transaction: %v", err)
 	}
 
-	// txHex := hex.EncodeToString(buf.Bytes())
-	txID, err := client.SendRawTransaction(tx, false)
-	if err != nil {
-		log.Fatalf("Failed to broadcast transaction: %v", err)
-	}
+	log.Println("Transaction broadcasted successfully! TXID: ", txid)
 
-	fmt.Printf("Transaction broadcasted! TXID: %s\n", txID.String())
 }
-
-func generatePrivateKey() string {
-	// Generate a new private key using btcec
-	privKey, err := btcec.NewPrivateKey()
-	if err != nil {
-		log.Fatalf("Error generating private key: %v", err)
-	}
-
-	// Convert the private key to WIF format
-	wif, err := btcutil.NewWIF(privKey, &chaincfg.MainNetParams, true)
-	if err != nil {
-		log.Fatalf("Error converting private key to WIF: %v", err)
-	}
-
-	return wif.String() // Return the private key in WIF format
-}
-
-// func generatePrivateKey() []byte {
-// 	// Generate a new private key using btcec
-// 	privKey, err := btcec.NewPrivateKey()
-// 	if err != nil {
-// 		log.Fatalf("Error generating private key: %v", err)
-// 	}
-
-// 	// Return the serialized private key as a byte slice
-// 	return privKey.Serialize()
-// }
