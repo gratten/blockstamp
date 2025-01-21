@@ -13,7 +13,7 @@ import (
 	"github.com/btcsuite/btcd/wire"
 )
 
-func transaction(blockheight int, stamp string) {
+func transaction(blockheight int, stamp string) (string, error) {
 
 	log.Println(blockheight)
 	log.Println(stamp)
@@ -101,5 +101,7 @@ func transaction(blockheight int, stamp string) {
 	}
 
 	log.Println("Transaction broadcasted successfully! TXID: ", txid)
+
+	return txid.String(), nil
 
 }

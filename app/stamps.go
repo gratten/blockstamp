@@ -86,9 +86,16 @@ func SubmitStamp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// txid, err := transaction(blockheight, stamp)
+	txid, err := transaction(blockheight, stamp)
+	if err != nil {
+		// Handle the error
+		log.Printf("Error obtaining txid: %v", err)
+	}
+
 	// Insert into the database
-	insertStmt := `INSERT INTO stamps (blockheight, stamp) VALUES ($1, $2)`
-	_, err = db.Exec(insertStmt, blockheight, stamp)
+	insertStmt := `INSERT INTO stamps (blockheight, stamp, txid) VALUES ($1, $2, $3)`
+	_, err = db.Exec(insertStmt, blockheight, stamp, txid)
 	if err != nil {
 		log.Printf("Error inserting stamp: %v", err)
 		http.Error(w, "Failed to insert stamp", http.StatusInternalServerError)
@@ -97,5 +104,5 @@ func SubmitStamp(w http.ResponseWriter, r *http.Request) {
 
 	// Respond with success (optional)
 	fmt.Fprintf(w, "Stamp submitted successfully!")
-	transaction(blockheight, stamp)
+	// transaction(blockheight, stamp)
 }
