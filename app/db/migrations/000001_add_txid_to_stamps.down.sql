@@ -1,0 +1,1 @@
+ALTER TABLE stamps DROP COLUMN txid;

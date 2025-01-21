@@ -1,0 +1,1 @@
+ALTER TABLE stamps ADD COLUMN txid TEXT;

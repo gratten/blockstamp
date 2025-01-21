@@ -1,11 +1,14 @@
 module blockstamp
 
-go 1.21.7
+go 1.22.0
+
+toolchain go1.22.11
 
 require (
 	github.com/btcsuite/btcd v0.24.2
 	github.com/btcsuite/btcd/btcutil v1.1.5
 	github.com/btcsuite/btcd/chaincfg/chainhash v1.1.0
+	github.com/golang-migrate/migrate/v4 v4.18.1
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.9
 )
@@ -17,6 +20,9 @@ require (
 	github.com/btcsuite/websocket v0.0.0-20150119174127-31079b680792 // indirect
 	github.com/decred/dcrd/crypto/blake256 v1.0.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1 // indirect
-	golang.org/x/crypto v0.7.0 // indirect
-	golang.org/x/sys v0.6.0 // indirect
+	github.com/hashicorp/errwrap v1.1.0 // indirect
+	github.com/hashicorp/go-multierror v1.1.1 // indirect
+	go.uber.org/atomic v1.7.0 // indirect
+	golang.org/x/crypto v0.27.0 // indirect
+	golang.org/x/sys v0.25.0 // indirect
 )
