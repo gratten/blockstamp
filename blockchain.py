@@ -18,7 +18,7 @@ def get_transaction_details(txid, rpc_url, rpc_user, rpc_password):
     
     # Send the RPC request
     response = requests.post(url, data=json.dumps(data), headers=headers, auth=(rpc_user, rpc_password))
-    
+    print(response) 
     # Check if the response is valid
     if response.status_code == 200:
         result = response.json()
