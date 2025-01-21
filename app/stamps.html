@@ -5,11 +5,15 @@
         <tr>
             <th>Blockheight</th>
             <th>Stamp</th>
+            <th>TxID</th>
         </tr>
         {{range .Stamps}}
             <tr>
                 <td>{{.Blockheight}}</td>
                 <td>{{.Stamp}}</td>
+                <td>
+                    {{if .TxID.Valid}}{{.TxID.String}}{{else}}NULL{{end}}
+                </td>
             </tr>
         {{end}}
     </table>

@@ -3,6 +3,7 @@ package main
 
 import (
 	// "database/sql"
+	"database/sql"
 	"fmt"
 	"html/template"
 	"log"
@@ -15,7 +16,8 @@ import (
 func ShowStamps(w http.ResponseWriter, r *http.Request) {
 	// Query the database for all stamps
 	// log.Println("Database connection:", db) // Logs the db connection (should not be nil)
-	rows, err := db.Query("SELECT blockheight, stamp FROM stamps ORDER BY id ASC")
+	// rows, err := db.Query("SELECT blockheight, stamp FROM stamps ORDER BY id ASC")
+	rows, err := db.Query("SELECT blockheight, stamp, txid FROM stamps ORDER BY id ASC")
 	if err != nil {
 		log.Printf("Error fetching stamps: %v", err)
 		http.Error(w, "Failed to fetch stamps", http.StatusInternalServerError)
@@ -26,6 +28,7 @@ func ShowStamps(w http.ResponseWriter, r *http.Request) {
 	var stamps []struct {
 		Blockheight int
 		Stamp       string
+		TxID        sql.NullString
 	}
 
 	// Loop through the result set
@@ -33,8 +36,9 @@ func ShowStamps(w http.ResponseWriter, r *http.Request) {
 		var stamp struct {
 			Blockheight int
 			Stamp       string
+			TxID        sql.NullString
 		}
-		err := rows.Scan(&stamp.Blockheight, &stamp.Stamp)
+		err := rows.Scan(&stamp.Blockheight, &stamp.Stamp, &stamp.TxID)
 		if err != nil {
 			log.Printf("Error scanning stamp: %v", err)
 			http.Error(w, "Failed to read stamps", http.StatusInternalServerError)
