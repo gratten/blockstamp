@@ -4,6 +4,7 @@ import (
 	// "encoding/hex"
 	// "fmt"
 
+	"fmt"
 	"log"
 
 	"github.com/btcsuite/btcd/btcutil"
@@ -104,4 +105,26 @@ func transaction(blockheight int, stamp string) (string, error) {
 
 	return txid.String(), nil
 
+}
+
+// CheckIfTransactionMined checks if the transaction is mined by querying the node's RPC interface.
+func CheckIfTransactionMined(txid string) (bool, error) {
+	// Convert the txid to chainhash.Hash type
+	hash, err := chainhash.NewHashFromStr(txid)
+	if err != nil {
+		return false, fmt.Errorf("invalid txid: %v", err)
+	}
+
+	// Get raw transaction details using the 'getrawtransaction' RPC call with verbose=true
+	txDetails, err := client.GetRawTransactionVerbose(hash)
+	if err != nil {
+		return false, fmt.Errorf("failed to get raw transaction: %v", err)
+	}
+
+	// Check if the transaction has a block hash (meaning it is mined)
+	if txDetails.BlockHash != "" {
+		return true, nil
+	}
+
+	return false, nil
 }

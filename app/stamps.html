@@ -11,7 +11,7 @@
             <tr>
                 <td>{{.Blockheight}}</td>
                 <td>{{.Stamp}}</td>
-                <td>
+                <td style="color: {{.TxIDColor}}">
                     {{if .TxID.Valid}}{{.TxID.String}}{{else}}NULL{{end}}
                 </td>
             </tr>

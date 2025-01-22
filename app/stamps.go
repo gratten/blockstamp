@@ -17,7 +17,7 @@ func ShowStamps(w http.ResponseWriter, r *http.Request) {
 	// Query the database for all stamps
 	// log.Println("Database connection:", db) // Logs the db connection (should not be nil)
 	// rows, err := db.Query("SELECT blockheight, stamp FROM stamps ORDER BY id ASC")
-	rows, err := db.Query("SELECT blockheight, stamp, txid FROM stamps ORDER BY id ASC")
+	rows, err := db.Query("SELECT blockheight, stamp, txid FROM stamps where txid IS NOT NULL ORDER BY blockheight ASC")
 	if err != nil {
 		log.Printf("Error fetching stamps: %v", err)
 		http.Error(w, "Failed to fetch stamps", http.StatusInternalServerError)
@@ -29,6 +29,7 @@ func ShowStamps(w http.ResponseWriter, r *http.Request) {
 		Blockheight int
 		Stamp       string
 		TxID        sql.NullString
+		TxIDColor   string
 	}
 
 	// Loop through the result set
@@ -37,6 +38,7 @@ func ShowStamps(w http.ResponseWriter, r *http.Request) {
 			Blockheight int
 			Stamp       string
 			TxID        sql.NullString
+			TxIDColor   string
 		}
 		err := rows.Scan(&stamp.Blockheight, &stamp.Stamp, &stamp.TxID)
 		if err != nil {
@@ -44,6 +46,47 @@ func ShowStamps(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Failed to read stamps", http.StatusInternalServerError)
 			return
 		}
+
+		// // Check if the transaction is mined
+		// if stamp.TxID.Valid {
+		// 	mined, err := CheckIfTransactionMined(client, stamp.TxID.String) // Call CheckIfTransactionMined
+		// 	if err != nil {
+		// 		log.Printf("Error checking txid %s: %v", stamp.TxID.String, err)
+		// 		http.Error(w, "Failed to check txid status", http.StatusInternalServerError)
+		// 		return
+		// 	}
+
+		// 	// Set the color based on whether the transaction is mined
+		// 	if mined {
+		// 		stamp.TxIDColor = "green"
+		// 	} else {
+		// 		stamp.TxIDColor = "black"
+		// 	}
+		// } else {
+		// 	stamp.TxIDColor = "black" // Default to black if TxID is invalid
+		// }
+
+		// // Determine if the transaction is mined
+		// if stamp.TxID.Valid && CheckIfTransactionMined(stamp.TxID.String) {
+		// 	stamp.TxIDColor = "green"
+		// } else {
+		// 	stamp.TxIDColor = "black"
+		// }
+		// Check if the transaction is mined, handle both values returned by CheckIfTransactionMined
+		if stamp.TxID.Valid {
+			mined, err := CheckIfTransactionMined(stamp.TxID.String)
+			if err != nil {
+				log.Printf("Error checking transaction status: %v", err)
+				stamp.TxIDColor = "black" // Default to black if there is an error
+			} else if mined {
+				stamp.TxIDColor = "green"
+			} else {
+				stamp.TxIDColor = "black"
+			}
+		} else {
+			stamp.TxIDColor = "black" // Handle the case where TxID is NULL
+		}
+
 		stamps = append(stamps, stamp)
 	}
 
