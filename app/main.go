@@ -1,10 +1,31 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 )
+
+// checkAndBroadcastTransactions checks the database for eligible transactions and broadcasts them.
+func checkAndBroadcastTransactions(db *sql.DB) {
+	// Retrieve the current block height
+	currentBlockHeight, err := GetCurrentBlockHeight(client)
+	if err != nil {
+		log.Printf("Error getting current block height: %v\n", err)
+		return
+	}
+	log.Println(currentBlockHeight)
+}
+
+// startChecker periodically checks the database for transactions to broadcast.
+func startChecker(db *sql.DB, interval time.Duration) {
+	for {
+		checkAndBroadcastTransactions(db)
+		time.Sleep(interval)
+	}
+}
 
 func main() {
 	defer client.Shutdown()
@@ -21,6 +42,9 @@ func main() {
 	go clearCachePeriodically()
 
 	fmt.Println("Server started")
+
+	// Start the periodic checker (e.g., every 10 seconds)
+	go startChecker(db, 3*time.Second)
 
 	http.HandleFunc("/", HomeHandler)
 	http.HandleFunc("/get-blockheight/", GetBlockheightByDate)

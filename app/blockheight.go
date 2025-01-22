@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/btcsuite/btcd/rpcclient"
 )
 
 // GetBlockTime retrieves the block time for a given block height
@@ -131,15 +133,51 @@ func GetBlockheightByDate(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Time taken for request: %v", duration)
 }
 
-// Handler for /current-blockheight/ to show the current blockheight
-func GetCurrentBlockheight(w http.ResponseWriter, r *http.Request) {
+// // Handler for /current-blockheight/ to show the current blockheight
+// func GetCurrentBlockheight(w http.ResponseWriter, r *http.Request) {
+// 	blockCount, err := client.GetBlockCount()
+// 	if err != nil {
+// 		http.Error(w, "Unable to fetch block count", http.StatusInternalServerError)
+// 		return
+// 	}
+
+// 	blockHash, err := client.GetBlockHash(blockCount)
+// 	if err != nil {
+// 		http.Error(w, "Unable to fetch block hash", http.StatusInternalServerError)
+// 		return
+// 	}
+
+// 	block, err := client.GetBlockVerbose(blockHash)
+// 	if err != nil {
+// 		http.Error(w, "Unable to fetch block details", http.StatusInternalServerError)
+// 		return
+// 	}
+
+// 	blockTime := time.Unix(block.Time, 0).Format("2006-01-02 15:04:05")
+
+// 	// Response format
+// 	response := fmt.Sprintf("Current Blockheight: %d<br>Mined on: %s", blockCount, blockTime)
+
+// 	w.Header().Set("Content-Type", "text/html") // Return HTML since we include <br> tags
+// 	fmt.Fprint(w, response)
+// }
+
+func GetCurrentBlockHeight(client *rpcclient.Client) (int, error) {
 	blockCount, err := client.GetBlockCount()
+	if err != nil {
+		return 0, fmt.Errorf("unable to fetch block count: %w", err)
+	}
+	return int(blockCount), nil
+}
+
+func GetCurrentBlockheight(w http.ResponseWriter, r *http.Request) {
+	blockCount, err := GetCurrentBlockHeight(client) // Reuse core function
 	if err != nil {
 		http.Error(w, "Unable to fetch block count", http.StatusInternalServerError)
 		return
 	}
 
-	blockHash, err := client.GetBlockHash(blockCount)
+	blockHash, err := client.GetBlockHash(int64(blockCount))
 	if err != nil {
 		http.Error(w, "Unable to fetch block hash", http.StatusInternalServerError)
 		return

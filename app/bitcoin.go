@@ -22,7 +22,7 @@ func transaction(blockheight int, stamp string) (string, error) {
 	// User inputs
 	targetBlockHeight := blockheight // Replace with user-provided block height
 	message := stamp                 // Replace with user-provided text
-	feeRate := int64(10)             // Fee rate in satoshis per byte
+	feeRate := int64(100)            // Fee rate in satoshis per byte
 
 	// Create OP_RETURN output
 	opReturnScript, err := txscript.NullDataScript([]byte(message))
@@ -74,8 +74,12 @@ func transaction(blockheight int, stamp string) (string, error) {
 
 	// Set nLockTime
 	tx.LockTime = uint32(targetBlockHeight)
+	// apparently this is really important
+	// tx.TxIn[0].Sequence = 0xFFFFFFFE // Set to a value below 0xFFFFFFFF
 
-	// log.Printf("Transaction: %+v\n", tx)
+	log.Printf("Transaction: %+v\n", tx)
+	fmt.Printf("nSequence: %v\n", tx.TxIn[0].Sequence)
+
 	// for i, txIn := range tx.TxIn {
 	// 	log.Printf("Input %d: %v\n", i, txIn)
 	// }
