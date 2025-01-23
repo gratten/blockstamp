@@ -2,19 +2,23 @@
 {{define "content"}}
     <h1>Stamps</h1>
     <table>
-        <tr>
-            <th>Blockheight</th>
-            <th>Stamp</th>
-            <th>TxID</th>
-        </tr>
-        {{range .Stamps}}
+        <thead>
             <tr>
-                <td>{{.Blockheight}}</td>
-                <td>{{.Stamp}}</td>
-                <td style="color: {{.TxIDColor}}">
-                    {{if .TxID.Valid}}{{.TxID.String}}{{else}}not broadcasted...{{end}}
-                </td>
+                <th>Blockheight</th>
+                <th>Stamp</th>
+                <th>TxID</th>
             </tr>
-        {{end}}
+        </thead>
+        <tbody hx-get="/stamps" hx-trigger="every 3s" hx-target="tbody" hx-swap="outerHTML">
+            {{range .Stamps}}
+                <tr>
+                    <td>{{.Blockheight}}</td>
+                    <td>{{.Stamp}}</td>
+                    <td style="color: {{.TxIDColor}}">
+                        {{if .TxID.Valid}}{{.TxID.String}}{{else}}not broadcasted...{{end}}
+                    </td>
+                </tr>
+            {{end}}
+        </tbody>
     </table>
 {{end}}

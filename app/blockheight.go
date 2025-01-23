@@ -171,6 +171,7 @@ func GetCurrentBlockHeight(client *rpcclient.Client) (int, error) {
 }
 
 func GetCurrentBlockheight(w http.ResponseWriter, r *http.Request) {
+	log.Printf("request from /current-blockheight")
 	blockCount, err := GetCurrentBlockHeight(client) // Reuse core function
 	if err != nil {
 		http.Error(w, "Unable to fetch block count", http.StatusInternalServerError)
