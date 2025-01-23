@@ -14,6 +14,12 @@ import (
 	"github.com/btcsuite/btcd/wire"
 )
 
+func transaction2(blockheight int, stamp string) (string, error) {
+	log.Println(blockheight)
+	log.Println(stamp)
+	return "txid", nil
+}
+
 func transaction(blockheight int, stamp string) (string, error) {
 
 	log.Println(blockheight)
@@ -77,8 +83,8 @@ func transaction(blockheight int, stamp string) (string, error) {
 	// apparently this is really important
 	// tx.TxIn[0].Sequence = 0xFFFFFFFE // Set to a value below 0xFFFFFFFF
 
-	log.Printf("Transaction: %+v\n", tx)
-	fmt.Printf("nSequence: %v\n", tx.TxIn[0].Sequence)
+	// log.Printf("Transaction: %+v\n", tx)
+	// fmt.Printf("nSequence: %v\n", tx.TxIn[0].Sequence)
 
 	// for i, txIn := range tx.TxIn {
 	// 	log.Printf("Input %d: %v\n", i, txIn)
@@ -98,6 +104,7 @@ func transaction(blockheight int, stamp string) (string, error) {
 	}
 
 	log.Println("Signed Transaction (Hex): ", signedTx)
+	// return signedTx, nil
 
 	// Step 2: Broadcast the signed transaction
 	txid, err := client.SendRawTransaction(signedTx, false)

@@ -16,8 +16,8 @@ import (
 func ShowStamps(w http.ResponseWriter, r *http.Request) {
 	// Query the database for all stamps
 	// log.Println("Database connection:", db) // Logs the db connection (should not be nil)
-	// rows, err := db.Query("SELECT blockheight, stamp FROM stamps ORDER BY id ASC")
-	rows, err := db.Query("SELECT blockheight, stamp, txid FROM stamps where txid IS NOT NULL ORDER BY blockheight ASC")
+	rows, err := db.Query("SELECT blockheight, stamp, txid FROM stamps ORDER BY blockheight DESC")
+	// rows, err := db.Query("SELECT blockheight, stamp, txid FROM stamps where txid IS NOT NULL ORDER BY blockheight ASC")
 	if err != nil {
 		log.Printf("Error fetching stamps: %v", err)
 		http.Error(w, "Failed to fetch stamps", http.StatusInternalServerError)
@@ -133,16 +133,25 @@ func SubmitStamp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// // txid, err := transaction(blockheight, stamp)
 	// txid, err := transaction(blockheight, stamp)
-	txid, err := transaction(blockheight, stamp)
-	if err != nil {
-		// Handle the error
-		log.Printf("Error obtaining txid: %v", err)
-	}
+	// if err != nil {
+	// 	// Handle the error
+	// 	log.Printf("Error obtaining txid: %v", err)
+	// }
+
+	// // Insert into the database
+	// insertStmt := `INSERT INTO stamps (blockheight, stamp, txid) VALUES ($1, $2, $3)`
+	// _, err = db.Exec(insertStmt, blockheight, stamp, txid)
+	// if err != nil {
+	// 	log.Printf("Error inserting stamp: %v", err)
+	// 	http.Error(w, "Failed to insert stamp", http.StatusInternalServerError)
+	// 	return
+	// }
 
 	// Insert into the database
-	insertStmt := `INSERT INTO stamps (blockheight, stamp, txid) VALUES ($1, $2, $3)`
-	_, err = db.Exec(insertStmt, blockheight, stamp, txid)
+	insertStmt := `INSERT INTO stamps (blockheight, stamp) VALUES ($1, $2)`
+	_, err = db.Exec(insertStmt, blockheight, stamp)
 	if err != nil {
 		log.Printf("Error inserting stamp: %v", err)
 		http.Error(w, "Failed to insert stamp", http.StatusInternalServerError)
