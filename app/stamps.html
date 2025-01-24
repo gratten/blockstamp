@@ -9,16 +9,10 @@
                 <th>TxID</th>
             </tr>
         </thead>
-        <tbody hx-get="/stamps" hx-trigger="every 3s" hx-target="tbody" hx-swap="outerHTML">
-            {{range .Stamps}}
-                <tr>
-                    <td>{{.Blockheight}}</td>
-                    <td>{{.Stamp}}</td>
-                    <td style="color: {{.TxIDColor}}">
-                        {{if .TxID.Valid}}{{.TxID.String}}{{else}}not broadcasted...{{end}}
-                    </td>
-                </tr>
-            {{end}}
+        <tbody hx-get="/stamps-table" hx-trigger="load, every 3s" hx-target="tbody" hx-swap="innerHTML">
+            <tr>
+                <td>Loading...</td>
+            </tr>
         </tbody>
     </table>
 {{end}}

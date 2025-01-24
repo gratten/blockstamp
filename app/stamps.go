@@ -230,6 +230,15 @@ import (
 // 	}
 // }
 
+func ShowStampsTable(w http.ResponseWriter, r *http.Request) {
+	log.Printf("request from /stamps")
+	fmt.Fprint(w, `
+        <tr>
+            <td>Dynamic Content</td>
+        </tr>
+    `)
+}
+
 func ShowStamps(w http.ResponseWriter, r *http.Request) {
 	log.Printf("request from /stamps")
 
