@@ -101,6 +101,5 @@ func main() {
 	http.HandleFunc("/submit-stamp/", SubmitStamp)
 	http.HandleFunc("/stamps", ShowStamps)
 	http.HandleFunc("/stamps-table", ShowStampsTable)
-	// http.HandleFunc("/stamps", TestEndpoint)
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }

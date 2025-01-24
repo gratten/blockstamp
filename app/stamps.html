@@ -10,9 +10,15 @@
             </tr>
         </thead>
         <tbody hx-get="/stamps-table" hx-trigger="load, every 3s" hx-target="tbody" hx-swap="innerHTML">
+            {{range .Stamps}}
             <tr>
-                <td>Loading...</td>
+                <td>{{.Blockheight}}</td>
+                <td>{{.Stamp}}</td>
+                <td style="color: {{.TxIDColor}}">
+                    {{if .TxID.Valid}}{{.TxID.String}}{{else}}not broadcasted...{{end}}
+                </td>
             </tr>
+            {{end}}
         </tbody>
     </table>
 {{end}}

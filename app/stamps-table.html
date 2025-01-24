@@ -1,5 +1,10 @@
 {{range .}}
 <tr>
-    <td>Loading...</td>
+    <!-- <td>Loading...</td> -->
+    <td>{{.Blockheight}}</td>
+    <td>{{.Stamp}}</td>
+    <td style="color: {{.TxIDColor}}">
+        {{if .TxID.Valid}}{{.TxID.String}}{{else}}not broadcasted...{{end}}
+    </td>
 </tr>
 {{end}}
