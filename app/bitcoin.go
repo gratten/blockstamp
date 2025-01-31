@@ -28,7 +28,7 @@ func transaction(blockheight int, stamp string) (string, error) {
 	// User inputs
 	targetBlockHeight := blockheight // Replace with user-provided block height
 	message := stamp                 // Replace with user-provided text
-	feeRate := int64(100)            // Fee rate in satoshis per byte
+	feeRate := int64(10)             // Fee rate in satoshis per byte
 
 	// Create OP_RETURN output
 	opReturnScript, err := txscript.NullDataScript([]byte(message))
@@ -65,7 +65,12 @@ func transaction(blockheight int, stamp string) (string, error) {
 	tx.AddTxOut(txOut)
 
 	// Add change output if necessary
+	log.Printf("UTXO amount: %v", int64(selectedUTXO.Amount*1e8))
+	log.Printf("fee amount: %v", feeRate*int64(tx.SerializeSize()))
+
 	changeAmount := int64(selectedUTXO.Amount*1e8) - feeRate*int64(tx.SerializeSize())
+	log.Printf("change amount: %v", changeAmount)
+
 	if changeAmount > 0 {
 		changeAddress, err := btcutil.DecodeAddress(selectedUTXO.Address, &chaincfg.MainNetParams)
 		if err != nil {

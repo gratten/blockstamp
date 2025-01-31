@@ -14,7 +14,7 @@ import (
 )
 
 func ShowStampsTable(w http.ResponseWriter, r *http.Request) {
-	log.Printf("request from /stamps-table")
+	// log.Printf("request from /stamps-table")
 
 	// Query the database for all stamps
 	rows, err := db.Query("SELECT blockheight, stamp, txid FROM stamps ORDER BY blockheight DESC")
@@ -51,7 +51,7 @@ func ShowStampsTable(w http.ResponseWriter, r *http.Request) {
 		if stamp.TxID.Valid {
 			mined, err := CheckIfTransactionMined(stamp.TxID.String)
 			if err != nil {
-				log.Printf("Error checking transaction status: %v", err)
+				// log.Printf("Error checking transaction status: %v", err)
 				stamp.TxIDColor = "black"
 			} else if mined {
 				stamp.TxIDColor = "green"
@@ -127,7 +127,7 @@ func ShowStamps(w http.ResponseWriter, r *http.Request) {
 		if stamp.TxID.Valid {
 			mined, err := CheckIfTransactionMined(stamp.TxID.String)
 			if err != nil {
-				log.Printf("Error checking transaction status: %v", err)
+				// log.Printf("Error checking transaction status: %v", err)
 				stamp.TxIDColor = "black"
 			} else if mined {
 				stamp.TxIDColor = "green"
