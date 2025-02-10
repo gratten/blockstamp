@@ -16,7 +16,7 @@ func checkAndBroadcastTransactions(db *sql.DB) {
 		log.Printf("Error getting current block height: %v\n", err)
 		return
 	}
-	log.Println(currentBlockHeight)
+	// log.Println(currentBlockHeight)
 
 	// Query the database for rows where target_blockheight <= currentBlockHeight and txid IS NULL
 	rows, err := db.Query(`
