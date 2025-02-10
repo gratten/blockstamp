@@ -4,13 +4,18 @@ package main
 import (
 	// "database/sql"
 	"database/sql"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
-	"regexp"
+	"os"
 	"strconv"
 	"strings"
+	"time"
+
+	"github.com/skip2/go-qrcode"
 )
 
 func ShowStampsTable(w http.ResponseWriter, r *http.Request) {
@@ -173,50 +178,221 @@ func ShowStamps(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// SubmitStamp handler to submit a stamp
-func SubmitStamp(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm() // Parse form data
-	blockheightStr := r.PostFormValue("blockheight")
-	re := regexp.MustCompile("[^0-9]")
-	blockheightStr = re.ReplaceAllString(blockheightStr, "")
-	log.Println("blockheightStr: ", blockheightStr)
-	stamp := r.PostFormValue("stamp")
-	log.Println("stamp: ", stamp)
+// // SubmitStamp handler to submit a stamp
+// func SubmitStamp(w http.ResponseWriter, r *http.Request) {
+// 	r.ParseForm() // Parse form data
+// 	blockheightStr := r.PostFormValue("blockheight")
+// 	re := regexp.MustCompile("[^0-9]")
+// 	blockheightStr = re.ReplaceAllString(blockheightStr, "")
+// 	log.Println("blockheightStr: ", blockheightStr)
+// 	stamp := r.PostFormValue("stamp")
+// 	log.Println("stamp: ", stamp)
 
-	// Convert blockheight string to integer
-	blockheight, err := strconv.Atoi(blockheightStr)
+// 	// Convert blockheight string to integer
+// 	blockheight, err := strconv.Atoi(blockheightStr)
+// 	if err != nil {
+// 		log.Printf("Error converting blockheight: %v", err)
+// 		http.Error(w, "Invalid blockheight", http.StatusBadRequest)
+// 		return
+// 	}
+
+// 	// // txid, err := transaction(blockheight, stamp)
+// 	// txid, err := transaction(blockheight, stamp)
+// 	// if err != nil {
+// 	// 	// Handle the error
+// 	// 	log.Printf("Error obtaining txid: %v", err)
+// 	// }
+
+// 	// // Insert into the database
+// 	// insertStmt := `INSERT INTO stamps (blockheight, stamp, txid) VALUES ($1, $2, $3)`
+// 	// _, err = db.Exec(insertStmt, blockheight, stamp, txid)
+// 	// if err != nil {
+// 	// 	log.Printf("Error inserting stamp: %v", err)
+// 	// 	http.Error(w, "Failed to insert stamp", http.StatusInternalServerError)
+// 	// 	return
+// 	// }
+
+// 	// Insert into the database
+// 	insertStmt := `INSERT INTO stamps (blockheight, stamp) VALUES ($1, $2)`
+// 	_, err = db.Exec(insertStmt, blockheight, stamp)
+// 	if err != nil {
+// 		log.Printf("Error inserting stamp: %v", err)
+// 		http.Error(w, "Failed to insert stamp", http.StatusInternalServerError)
+// 		return
+// 	}
+
+// 	// Respond with success (optional)
+// 	fmt.Fprintf(w, "Stamp submitted successfully!")
+// 	// transaction(blockheight, stamp)
+// }
+
+// func SubmitStamp(w http.ResponseWriter, r *http.Request) {
+// 	r.ParseForm()
+// 	blockheightStr := r.PostFormValue("blockheight")
+// 	stamp := r.PostFormValue("stamp")
+
+// 	// Create invoice for the stamp
+// 	invoice, err := createInvoice(fmt.Sprintf("Blockstamp: %s", stamp))
+// 	if err != nil {
+// 		http.Error(w, "Failed to create invoice", http.StatusInternalServerError)
+// 		return
+// 	}
+
+// 	// Instead of inserting to database now, store the stamp data temporarily
+// 	// We can use a cache or temporary storage for pending payments
+// 	pendingStamps.Set(invoice.PaymentHash, StampData{
+// 		Blockheight: blockheightStr,
+// 		Stamp:       stamp,
+// 	})
+
+// 	// Return invoice data to client
+// 	response := struct {
+// 		PaymentRequest string `json:"payment_request"`
+// 		PaymentHash    string `json:"payment_hash"`
+// 	}{
+// 		PaymentRequest: invoice.PaymentRequest,
+// 		PaymentHash:    invoice.PaymentHash,
+// 	}
+
+// 	w.Header().Set("Content-Type", "application/json")
+// 	json.NewEncoder(w).Encode(response)
+// }
+
+func SubmitStamp(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	blockheightStr := r.PostFormValue("blockheight")
+	stamp := r.PostFormValue("stamp")
+
+	// Create invoice for the stamp
+	invoice, err := createInvoice(fmt.Sprintf("Blockstamp: %s", stamp))
 	if err != nil {
-		log.Printf("Error converting blockheight: %v", err)
-		http.Error(w, "Invalid blockheight", http.StatusBadRequest)
+		http.Error(w, "Failed to create invoice", http.StatusInternalServerError)
 		return
 	}
 
-	// // txid, err := transaction(blockheight, stamp)
-	// txid, err := transaction(blockheight, stamp)
-	// if err != nil {
-	// 	// Handle the error
-	// 	log.Printf("Error obtaining txid: %v", err)
-	// }
+	// Instead of inserting to database now, store the stamp data temporarily
+	pendingStamps.Set(invoice.PaymentHash, StampData{
+		Blockheight: blockheightStr,
+		Stamp:       stamp,
+	})
 
-	// // Insert into the database
-	// insertStmt := `INSERT INTO stamps (blockheight, stamp, txid) VALUES ($1, $2, $3)`
-	// _, err = db.Exec(insertStmt, blockheight, stamp, txid)
-	// if err != nil {
-	// 	log.Printf("Error inserting stamp: %v", err)
-	// 	http.Error(w, "Failed to insert stamp", http.StatusInternalServerError)
-	// 	return
-	// }
+	// Start a goroutine to poll payment status
+	go func() {
+		for i := 0; i < 60; i++ { // Try for 5 minutes
+			time.Sleep(5 * time.Second)
 
-	// Insert into the database
-	insertStmt := `INSERT INTO stamps (blockheight, stamp) VALUES ($1, $2)`
-	_, err = db.Exec(insertStmt, blockheight, stamp)
+			// Check payment status using LNBits API
+			url := fmt.Sprintf("%s/api/v1/payments/%s", os.Getenv("LNBITS_URL"), invoice.PaymentHash)
+			req, _ := http.NewRequest("GET", url, nil)
+			req.Header.Set("X-Api-Key", os.Getenv("LNBITS_API_KEY"))
+
+			client := &http.Client{}
+			resp, err := client.Do(req)
+			if err != nil {
+				log.Printf("Error checking payment status: %v", err)
+				continue
+			}
+			defer resp.Body.Close()
+
+			var payment struct {
+				Paid bool `json:"paid"`
+			}
+			if err := json.NewDecoder(resp.Body).Decode(&payment); err != nil {
+				log.Printf("Error decoding payment response: %v", err)
+				continue
+			}
+
+			if payment.Paid {
+				// Get the pending stamp data
+				stampData, exists := pendingStamps.Get(invoice.PaymentHash)
+				if !exists {
+					log.Printf("No pending stamp found for payment hash: %s", invoice.PaymentHash)
+					return
+				}
+
+				// Clean and convert blockheight string to integer
+				blockheightStr := strings.Split(stampData.Blockheight, " ")[0] // Remove " (estimate)" if present
+				blockheight, err := strconv.Atoi(blockheightStr)
+				if err != nil {
+					log.Printf("Error converting blockheight to integer: %v", err)
+					return
+				}
+
+				// Insert into database
+				insertStmt := `INSERT INTO stamps (blockheight, stamp) VALUES ($1, $2)`
+				_, err = db.Exec(insertStmt, blockheight, stampData.Stamp)
+				if err != nil {
+					log.Printf("Error inserting stamp into database: %v", err)
+					return
+				}
+
+				// Clean up
+				pendingStamps.Delete(invoice.PaymentHash)
+				log.Printf("Successfully processed payment and stored stamp")
+				return
+			}
+		}
+		log.Printf("Payment timeout for hash: %s", invoice.PaymentHash)
+	}()
+
+	// Generate QR code
+	qr, err := qrcode.Encode(invoice.PaymentRequest, qrcode.Medium, 256)
 	if err != nil {
-		log.Printf("Error inserting stamp: %v", err)
+		log.Printf("Error generating QR code: %v", err)
+	}
+	qrBase64 := base64.StdEncoding.EncodeToString(qr)
+
+	// // Return invoice data to client
+	// response := struct {
+	// 	PaymentRequest string `json:"payment_request"`
+	// 	PaymentHash    string `json:"payment_hash"`
+	// }{
+	// 	PaymentRequest: invoice.PaymentRequest,
+	// 	PaymentHash:    invoice.PaymentHash,
+	// }
+
+	// Return invoice data to client
+	response := struct {
+		PaymentRequest string `json:"payment_request"`
+		PaymentHash    string `json:"payment_hash"`
+		QRCode         string `json:"qr_code"`
+	}{
+		PaymentRequest: invoice.PaymentRequest,
+		PaymentHash:    invoice.PaymentHash,
+		QRCode:         qrBase64,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func PaymentWebhookHandler(w http.ResponseWriter, r *http.Request) {
+	var payload struct {
+		PaymentHash string `json:"payment_hash"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Invalid payload", http.StatusBadRequest)
+		return
+	}
+
+	// Get the pending stamp data
+	stampData, exists := pendingStamps.Get(payload.PaymentHash)
+	if !exists {
+		http.Error(w, "Invalid payment hash", http.StatusBadRequest)
+		return
+	}
+
+	// Only now insert into database after payment confirmed
+	insertStmt := `INSERT INTO stamps (blockheight, stamp) VALUES ($1, $2)`
+	_, err := db.Exec(insertStmt, stampData.Blockheight, stampData.Stamp)
+	if err != nil {
 		http.Error(w, "Failed to insert stamp", http.StatusInternalServerError)
 		return
 	}
 
-	// Respond with success (optional)
-	fmt.Fprintf(w, "Stamp submitted successfully!")
-	// transaction(blockheight, stamp)
+	// Clean up the pending payment
+	pendingStamps.Delete(payload.PaymentHash)
+
+	w.WriteHeader(http.StatusOK)
 }

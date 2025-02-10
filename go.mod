@@ -22,6 +22,7 @@ require (
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
+	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	golang.org/x/crypto v0.27.0 // indirect
 	golang.org/x/sys v0.25.0 // indirect

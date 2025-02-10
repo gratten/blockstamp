@@ -76,6 +76,8 @@ func startChecker(db *sql.DB, interval time.Duration) {
 	}
 }
 
+var pendingStamps *PendingStamps
+
 func main() {
 	defer client.Shutdown()
 
@@ -95,6 +97,7 @@ func main() {
 	// Start the periodic checker (e.g., every 10 seconds)
 	go startChecker(db, 3*time.Second)
 
+	pendingStamps = NewPendingStamps()
 	http.HandleFunc("/", HomeHandler)
 	http.HandleFunc("/get-blockheight/", GetBlockheightByDate)
 	http.HandleFunc("/current-blockheight/", GetCurrentBlockheight)
