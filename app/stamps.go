@@ -396,3 +396,37 @@ func PaymentWebhookHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 }
+
+func CheckPaymentStatus(w http.ResponseWriter, r *http.Request) {
+	paymentHash := r.URL.Query().Get("payment_hash")
+
+	// Check if payment exists in pendingStamps
+	_, exists := pendingStamps.Get(paymentHash)
+	if !exists {
+		// If it doesn't exist in pending, it was successful
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]bool{"paid": true})
+		return
+	}
+
+	// Check LNBits payment status
+	url := fmt.Sprintf("%s/api/v1/payments/%s", os.Getenv("LNBITS_URL"), paymentHash)
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Set("X-Api-Key", os.Getenv("LNBITS_API_KEY"))
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	var payment struct {
+		Paid bool `json:"paid"`
+	}
+	json.NewDecoder(resp.Body).Decode(&payment)
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(payment)
+}
