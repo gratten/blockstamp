@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -79,31 +78,56 @@ func startChecker(db *sql.DB, interval time.Duration) {
 var pendingStamps *PendingStamps
 
 func main() {
+	// Initialize loggers
+	if err := initLoggers(); err != nil {
+		log.Fatalf("Could not initialize loggers: %v", err)
+	}
+	InfoLogger.Println("Server starting up...")
+
 	defer client.Shutdown()
 
 	// initialize db
 	var err error
 	db, err = initDB()
 	if err != nil {
-		log.Fatalf("Could not initialize database: %v", err)
+		ErrorLogger.Fatalf("Could not initialize database: %v", err)
 	}
-	defer closeDB(db) // Ensure the database connection is closed when the program exits
+	defer closeDB(db)
 
 	// Start cache cleanup goroutine
 	go clearCachePeriodically()
 
-	fmt.Println("Server started")
+	InfoLogger.Println("Server started")
 
-	// Start the periodic checker (e.g., every 10 seconds)
+	// Start the periodic checker
 	go startChecker(db, 3*time.Second)
+	// go checkPendingPayments(db, 5*time.Second)
 
 	pendingStamps = NewPendingStamps()
-	http.HandleFunc("/", HomeHandler)
-	http.HandleFunc("/get-blockheight/", GetBlockheightByDate)
-	http.HandleFunc("/current-blockheight/", GetCurrentBlockheight)
-	http.HandleFunc("/submit-stamp/", SubmitStamp)
-	http.HandleFunc("/stamps", ShowStamps)
-	http.HandleFunc("/stamps-table", ShowStampsTable)
-	http.HandleFunc("/check-payment-status", CheckPaymentStatus)
+
+	// Log all route registrations
+	InfoLogger.Println("Registering routes...")
+	http.HandleFunc("/", logMiddleware(HomeHandler))
+	http.HandleFunc("/get-blockheight/", logMiddleware(GetBlockheightByDate))
+	http.HandleFunc("/current-blockheight/", logMiddleware(GetCurrentBlockheight))
+	http.HandleFunc("/submit-stamp/", logMiddleware(SubmitStamp))
+	http.HandleFunc("/stamps", logMiddleware(ShowStamps))
+	http.HandleFunc("/stamps-table", logMiddleware(ShowStampsTable))
+	http.HandleFunc("/check-payment-status", logMiddleware(CheckPaymentStatus))
+
+	InfoLogger.Println("Starting HTTP server on :8000")
 	log.Fatal(http.ListenAndServe(":8000", nil))
+}
+
+// Middleware to log HTTP requests
+func logMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		startTime := time.Now()
+		InfoLogger.Printf("Request started: %s %s from %s", r.Method, r.URL.Path, r.RemoteAddr)
+
+		next(w, r)
+
+		duration := time.Since(startTime)
+		InfoLogger.Printf("Request completed: %s %s in %v", r.Method, r.URL.Path, duration)
+	}
 }

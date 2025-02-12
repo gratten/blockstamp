@@ -48,3 +48,28 @@ func createInvoice(memo string) (*Invoice, error) {
 
 	return &invoice, nil
 }
+
+func checkLNbitsPayment(paymentHash string) (bool, error) {
+	url := fmt.Sprintf("%s/api/v1/payments/%s", os.Getenv("LNBITS_URL"), paymentHash)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return false, err
+	}
+
+	req.Header.Set("X-Api-Key", os.Getenv("LNBITS_API_KEY"))
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return false, err
+	}
+	defer resp.Body.Close()
+
+	var payment struct {
+		Paid bool `json:"paid"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&payment); err != nil {
+		return false, err
+	}
+
+	return payment.Paid, nil
+}
