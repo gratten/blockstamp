@@ -71,8 +71,21 @@ func transaction(blockheight int, stamp string) (string, error) {
 	changeAmount := int64(selectedUTXO.Amount*1e8) - feeRate*int64(tx.SerializeSize())
 	log.Printf("change amount: %v", changeAmount)
 
+	// if changeAmount > 0 {
+	// 	changeAddress, err := btcutil.DecodeAddress(selectedUTXO.Address, &chaincfg.MainNetParams)
+	// 	if err != nil {
+	// 		log.Fatalf("Failed to decode change address: %v", err)
+	// 	}
+	// 	changeScript, err := txscript.PayToAddrScript(changeAddress)
+	// 	if err != nil {
+	// 		log.Fatalf("Failed to create change script: %v", err)
+	// 	}
+	// 	tx.AddTxOut(wire.NewTxOut(changeAmount, changeScript))
+	// }
+
+	// use when running on regtest
 	if changeAmount > 0 {
-		changeAddress, err := btcutil.DecodeAddress(selectedUTXO.Address, &chaincfg.MainNetParams)
+		changeAddress, err := btcutil.DecodeAddress(selectedUTXO.Address, &chaincfg.RegressionNetParams)
 		if err != nil {
 			log.Fatalf("Failed to decode change address: %v", err)
 		}
