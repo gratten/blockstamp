@@ -21,7 +21,7 @@ func checkAndBroadcastTransactions(db *sql.DB) {
 	rows, err := db.Query(`
 		SELECT id, blockheight, stamp 
 		FROM stamps 
-		WHERE blockheight = $1 AND txid IS NULL
+		WHERE blockheight <= $1 AND txid IS NULL
 	`, currentBlockHeight)
 	if err != nil {
 		log.Printf("Error querying database: %v\n", err)
