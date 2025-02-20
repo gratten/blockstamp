@@ -3,3 +3,4 @@ venv/
 .direnv
 .env
 !.env.sample
+logs/

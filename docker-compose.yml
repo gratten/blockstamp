@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  bitcoind:
+    image: lnbook/bitcoind:latest
+    container_name: bitcoind
+    ports:
+      - "18443:18443"
+      - "8332:8332"
+    volumes:
+      - bitcoind_data:/home/bitcoin/.bitcoin
+    restart: unless-stopped
+
+  app:
+    build: .
+    container_name: blockstamp
+    depends_on:
+      - bitcoind
+    environment:
+      BITCOIN_RPC_HOST: "http://bitcoind:18443"
+      BITCOIN_RPC_USER: "regtest"
+      BITCOIN_RPC_PASSWORD: "regtest"
+    restart: unless-stopped
+
+volumes:
+  bitcoind_data:
