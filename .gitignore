@@ -4,3 +4,4 @@ venv/
 .env
 !.env.sample
 logs/
+docker-compose.yml

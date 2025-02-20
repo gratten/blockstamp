@@ -11,16 +11,24 @@ services:
       - bitcoind_data:/home/bitcoin/.bitcoin
     restart: unless-stopped
 
+  postgres:
+    image: postgres:16
+    container_name: blockstamp_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
   app:
     build: .
     container_name: blockstamp
+    ports:
+      - "8000:8000"
     depends_on:
       - bitcoind
-    environment:
-      BITCOIN_RPC_HOST: "http://bitcoind:18443"
-      BITCOIN_RPC_USER: "regtest"
-      BITCOIN_RPC_PASSWORD: "regtest"
     restart: unless-stopped
 
 volumes:
   bitcoind_data:
+  postgres_data:
