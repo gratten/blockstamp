@@ -11,22 +11,55 @@ services:
       - bitcoind_data:/home/bitcoin/.bitcoin
     restart: unless-stopped
 
+  # bitcoind:
+  #   image: lnbook/bitcoind:latest
+  #   container_name: bitcoind
+  #   ports:
+  #     - "18332:18332"  # Testnet RPC port (instead of 18443 for regtest)
+  #     - "18333:18333"  # Testnet P2P port (instead of 8332)
+  #   volumes:
+  #     - bitcoind_data:/home/bitcoin/.bitcoin
+  #   command: 
+  #     - -testnet=1
+  #     - -rpcallowip=0.0.0.0/0
+  #     - -rpcbind=0.0.0.0
+  #     - -server=1
+  #   restart: unless-stopped
+
   postgres:
     image: postgres:16
     container_name: blockstamp_db
     ports:
       - "5432:5432"
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    restart: unless-stopped
+    # restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   app:
     build: .
     container_name: blockstamp
     ports:
       - "8000:8000"
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT} 
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
     depends_on:
-      - bitcoind
+      postgres:
+        condition: service_healthy
+      bitcoind:
+        condition: service_started
     restart: unless-stopped
 
 volumes:
