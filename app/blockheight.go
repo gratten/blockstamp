@@ -161,7 +161,17 @@ func GetCurrentBlockheight(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	blockTime := time.Unix(block.Time, 0).Format("2006-01-02 15:04:05")
+	location, err := time.LoadLocation("America/New_York")
+	if err != nil {
+		http.Error(w, "Unable to load timezone", http.StatusInternalServerError)
+		return
+	}
+
+	// blockTime := time.Unix(block.Time, 0).Format("2006-01-02 15:04:05")
+	// Convert Unix timestamp to Eastern time
+	blockTimeUTC := time.Unix(block.Time, 0)
+	blockTimeEastern := blockTimeUTC.In(location)
+	blockTime := blockTimeEastern.Format("2006-01-02 15:04:05")
 
 	// Response format
 	response := fmt.Sprintf("Current Blockheight: %d<br>Mined on: %s", blockCount, blockTime)

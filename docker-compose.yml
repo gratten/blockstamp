@@ -49,6 +49,8 @@ services:
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
+      BITCOIN_RPC_USER: ${BTCUSER}
+      BITCOIN_RPC_PASSWORD: ${PASSWORD}
     depends_on:
       postgres:
         condition: service_healthy
