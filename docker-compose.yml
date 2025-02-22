@@ -2,29 +2,23 @@ version: '3.8'
 
 services:
   bitcoind:
-    image: lnbook/bitcoind:latest
+    image: lnbook/bitcoind
     container_name: bitcoind
-    ports:
-      - "18443:18443"
-      - "8332:8332"
-    volumes:
-      - bitcoind_data:/home/bitcoin/.bitcoin
     restart: unless-stopped
-
-  # bitcoind:
-  #   image: lnbook/bitcoind:latest
-  #   container_name: bitcoind
-  #   ports:
-  #     - "18332:18332"  # Testnet RPC port (instead of 18443 for regtest)
-  #     - "18333:18333"  # Testnet P2P port (instead of 8332)
-  #   volumes:
-  #     - bitcoind_data:/home/bitcoin/.bitcoin
-  #   command: 
-  #     - -testnet=1
-  #     - -rpcallowip=0.0.0.0/0
-  #     - -rpcbind=0.0.0.0
-  #     - -server=1
-  #   restart: unless-stopped
+    volumes:
+      - /home/gratten/.bitcoin:/root/.bitcoin
+    ports:
+      - "18332:18332"  # RPC port
+      - "18333:18333"  # P2P port
+    entrypoint: bitcoind
+    command:
+      - "-testnet"
+      - "-server=1"
+      - "-txindex=1"
+      - "-rpcbind=0.0.0.0"
+      - "-rpcallowip=0.0.0.0/0"
+      - "-rpcuser=${BTCUSER}"
+      - "-rpcpassword=${PASSWORD}"
 
   postgres:
     image: postgres:16
