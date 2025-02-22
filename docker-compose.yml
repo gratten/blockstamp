@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   bitcoind:
-    image: lnbook/bitcoind
+    # image: lnbook/bitcoind:latest
+    image: ruimarinho/bitcoin-core:latest
+    # image: bitcoin/bitcoin-core:latest
     container_name: bitcoind
     restart: unless-stopped
     volumes:
@@ -19,6 +21,7 @@ services:
       - "-rpcallowip=0.0.0.0/0"
       - "-rpcuser=${BTCUSER}"
       - "-rpcpassword=${PASSWORD}"
+      - "-wallet=mywallet"
 
   postgres:
     image: postgres:16
